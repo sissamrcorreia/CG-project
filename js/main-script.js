@@ -1,6 +1,8 @@
 import * as THREE from "three";
-import { Trailer } from "./trailer/trailer.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { Trailer } from "./trailer/trailer.js";
+import { Arm } from "./transformer/arm.js";
+import { Body } from "./transformer/body.js";
 // import { VRButton } from "three/addons/webxr/VRButton.js";
 // import * as Stats from "three/addons/libs/stats.module.js";
 // import { GUI } from "three/addons/libs/lil-gui.module.min.js";
@@ -27,6 +29,14 @@ function createScene() {
   const trailer = new Trailer();
   trailer.position.set(0, 0, 0);
   scene.add(trailer);
+
+  const arm = new Arm();
+  arm.position.set(-30, 0, 0);
+  scene.add(arm);
+
+  // const body = new Body();
+  // body.position.set(0, 0, 0);
+  // scene.add(body);
 
 }
 

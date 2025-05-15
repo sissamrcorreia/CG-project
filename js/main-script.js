@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Trailer } from "./trailer.js";
+import { Trailer } from "./trailer/trailer.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 // import { VRButton } from "three/addons/webxr/VRButton.js";
 // import * as Stats from "three/addons/libs/stats.module.js";
@@ -14,12 +14,14 @@ const CLOCK = new THREE.Clock();
 
 let renderer, scene;
 
+const BACKGROUND = new THREE.Color(0xe4f2f7);
+
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
 function createScene() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff); // Set background color
+  scene.background = BACKGROUND
 
   // trailer
   const trailer = new Trailer();

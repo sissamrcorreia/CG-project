@@ -41,7 +41,7 @@ function createScene() {
   scene.add(trailer);
 
   const body = new Body();
-  body.position.set(-25, 0, 0);
+  body.position.set(-25, -1, 0);
   scene.add(body);
 }
 

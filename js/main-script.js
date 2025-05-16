@@ -13,6 +13,7 @@ import { Body } from "./transformer/body.js";
 const HEIGHT = window.innerHeight;
 const WIDTH = window.innerWidth;
 const CLOCK = new THREE.Clock();
+let pressed_wireframe = false;
 
 let renderer, scene;
 
@@ -23,7 +24,7 @@ const BACKGROUND = new THREE.Color(0xe4f2f7);
 /////////////////////
 function createScene() {
   scene = new THREE.Scene();
-  scene.background = BACKGROUND
+  scene.background = BACKGROUND;
 
   // trailer
   const trailer = new Trailer();
@@ -37,7 +38,6 @@ function createScene() {
   // const body = new Body();
   // body.position.set(0, 0, 0);
   // scene.add(body);
-
 }
 
 //////////////////////
@@ -45,7 +45,6 @@ function createScene() {
 //////////////////////
 const camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, 1000);
 camera.position.set(0, 5, 50); // Set camera position (x, y, z)
-
 
 // TODO: remove this line
 let controls;
@@ -93,20 +92,20 @@ function init() {
   document.body.appendChild(renderer.domElement);
 
   createScene();
-  render()
+  render();
 
-  // TODO: remove this line
-  controls = new OrbitControls(camera, renderer.domElement)
+  // TODO: remove this part
+  controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
   controls.minDistance = 10;
-controls.maxDistance = 200;
-controls.maxPolarAngle = Math.PI / 2; // 90 degrees
-controls.minPolarAngle = 0;          // top view
-
-
+  controls.maxDistance = 200;
+  // controls.maxPolarAngle = Math.PI / 2; // 90 degrees
+  controls.minPolarAngle = 0; // top view
 
   window.addEventListener("resize", onResize);
+  window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("keyup", onKeyUp);
 }
 
 /////////////////////
@@ -123,24 +122,49 @@ function animate() {
 /* RESIZE WINDOW CALLBACK */
 ////////////////////////////
 function onResize() {
-    renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
-    if (window.innerHeight > 0 && window.innerWidth > 0) {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-    }
-
+  if (window.innerHeight > 0 && window.innerWidth > 0) {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  }
 }
 
 ///////////////////////
 /* KEY DOWN CALLBACK */
 ///////////////////////
-function onKeyDown(e) {}
+function onKeyDown(e) {
+
+  switch (e.keyCode) {
+    case 55: // 7
+      if (pressed_wireframe) {
+        break;
+      }
+
+      scene.traverse(function (node) {
+        if (node instanceof THREE.Mesh) {
+          node.material.wireframe = !node.material.wireframe;
+          pressed_wireframe = true;
+        }
+      });
+      break;
+    default:
+      // TODO: Remove this line
+      console.log("tecla: ", e.keyCode);
+      break;
+  }
+}
 
 ///////////////////////
 /* KEY UP CALLBACK */
 ///////////////////////
-function onKeyUp(e) {}
+function onKeyUp(e) {
+  switch (e.keyCode) {
+    case 55: // 7
+      pressed_wireframe = false;
+      break;
+  }
+}
 
 init();
 animate();

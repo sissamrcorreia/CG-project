@@ -8,6 +8,11 @@ export class Trailer extends THREE.Group {
     this._addWheels();
     this._addHitch();
     this._addAxis();
+
+    this.rotateOnAxis(
+      new THREE.Vector3(0, 1, 0),
+      Math.PI
+    ); // Rotate the trailer to face the correct direction
     }
 
   _addBox() {

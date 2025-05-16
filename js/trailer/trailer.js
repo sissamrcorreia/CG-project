@@ -58,7 +58,7 @@ export class Trailer extends THREE.Group {
     const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
     const axis = new THREE.Mesh(geometry, material);
 
-    axis.position.set(-11, -9, 0);
+    axis.position.set(-11, -8.5 , 0);
 
     this._axis = axis;
     this.trailer.add(axis);

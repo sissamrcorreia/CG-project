@@ -31,10 +31,10 @@ export class Trailer extends THREE.Group {
     const wheelGeometry = new THREE.CylinderGeometry(2, 2, 1, 32);
     const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const wheelPositions = [
-      [-8, -10, 5],
-      [-14, -10, 5],
-      [-8, -10, -5],
-      [-14, -10, -5],
+      [-8.5, -10, 5],
+      [-13.5, -10, 5],
+      [-8.5, -10, -5],
+      [-13.5, -10, -5],
     ];
     wheelPositions.forEach((pos) => {
       const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);

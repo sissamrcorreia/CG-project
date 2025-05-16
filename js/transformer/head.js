@@ -56,7 +56,12 @@ export class Head extends THREE.Group {
         this.head.add(antennas);
     }
 
-    update()  {
-        // Update the head's position or rotation if needed
-    }
+    update(value)  {
+        const min = -3*Math.PI / 2;
+        const max = 0;
+
+        const angle = this.head.rotation.z + value;
+        const newAngle = Math.min(Math.max(angle, min), max);
+        this.head.rotation.z = newAngle;
+    }  
 }

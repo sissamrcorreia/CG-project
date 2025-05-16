@@ -16,6 +16,8 @@ const WIDTH = window.innerWidth;
 const CLOCK = new THREE.Clock();
 let pressed_wireframe = false;
 
+let body;
+
 let trailor_velX = [0,0]
 let trailor_velZ = [0,0]
 
@@ -40,7 +42,7 @@ function createScene() {
   trailer.position.set(0, 0, 0);
   scene.add(trailer);
 
-  const body = new Body();
+  body = new Body();
   body.position.set(-25, -1, 0);
   scene.add(body);
 }
@@ -99,7 +101,6 @@ function init() {
   document.body.appendChild(renderer.domElement);
 
   createScene();
-  render();
 
   // TODO: remove this part
   controls = new OrbitControls(camera, renderer.domElement);
@@ -143,7 +144,80 @@ function onResize() {
 function onKeyDown(e) {
 
   switch (e.keyCode) {
+    // Frontal camera
+    case 49: // 1
+    case 97: // 1 (numpad)
+
+      break;
+    
+    // Lateral camera
+    case 50: // 2
+    case 98: // 2 (numpad)
+
+      break;
+
+    // Top camera
+    case 51: // 3
+    case 99: // 3 (numpad)
+
+      break;
+
+    // Prespective camera
+    case 52: // 4
+    case 100: // 4 (numpad)
+
+      break;
+
+    // To control the waist
+    case 119: // w
+    case 87: // W
+
+      break;
+
+    case 115: // s
+    case 83: // S
+      
+      break;
+
+    // TO control the feet
+    case 113: // q
+    case 81: // Q
+
+      break;
+
+    case 97: // a
+    case 65: // A
+
+      break;
+    
+    // To control the arms
+    case 101: // e
+    case 69: // E
+
+      break;
+
+    case 100: // d
+    case 68: // D
+
+      break;
+    
+    // To control the head
+    case 82: // 'R'
+    case 114: // 'r'
+        body.getHead().update(0.1);
+        break;
+    
+    case 102: // f
+    case 70: // F
+        body.getHead().update(-0.1);
+        break;
+      break;
+    
+    
+    
+    
     case 55: // 7
+    case 103: // 7 (numpad)
       if (pressed_wireframe) {
         break;
       }
@@ -169,6 +243,50 @@ function onKeyUp(e) {
   switch (e.keyCode) {
     case 55: // 7
       pressed_wireframe = false;
+      break;
+    
+    // To control the waist
+    case 119: // w
+    case 87: // W
+
+      break;
+
+    case 115: // s
+    case 83: // S
+      
+      break;
+
+    // TO control the feet
+    case 113: // q
+    case 81: // Q
+
+      break;
+
+    case 97: // a
+    case 65: // A
+
+      break;
+    
+    // To control the arms
+    case 101: // e
+    case 69: // E
+
+      break;
+
+    case 100: // d
+    case 68: // D
+
+      break;
+    
+    // To control the head
+    case 82: // 'R'
+    case 114: // 'r'
+
+        break;
+    
+    case 102: // f
+    case 70: // F
+
       break;
   }
 }

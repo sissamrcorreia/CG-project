@@ -15,7 +15,7 @@ export class Body extends THREE.Group {
     this._addWheels();
 
     this._addArms();
-    this._addHead();
+    this.head = this._addHead();
     this._addLegs();
   }
 
@@ -99,6 +99,8 @@ export class Body extends THREE.Group {
     const head = new Head();
     head.position.set(0, 4.5, 0);
     this.body.add(head);
+
+    return head;
   }
 
   ///////////////////////
@@ -117,6 +119,11 @@ export class Body extends THREE.Group {
     this.body.add(rightLeg);
   }
   ///////////////////////
+
+
+  getHead() {
+    return this.head;
+  }
 
   update() {
     // Update logic for the body

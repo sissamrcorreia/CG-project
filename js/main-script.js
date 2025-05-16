@@ -3,6 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Trailer } from "./trailer/trailer.js";
 import { Arm } from "./transformer/arm.js";
 import { Body } from "./transformer/body.js";
+import { Head } from "./transformer/head.js";
 // import { VRButton } from "three/addons/webxr/VRButton.js";
 // import * as Stats from "three/addons/libs/stats.module.js";
 // import { GUI } from "three/addons/libs/lil-gui.module.min.js";
@@ -15,9 +16,12 @@ const WIDTH = window.innerWidth;
 const CLOCK = new THREE.Clock();
 let pressed_wireframe = false;
 
+let trailor_velX = [0,0]
+let trailor_velZ = [0,0]
+
 let renderer, scene;
 
-const BACKGROUND = new THREE.Color(0xe4f2f7);
+const BACKGROUND = new THREE.Color(0xd5edf5);
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -26,25 +30,28 @@ function createScene() {
   scene = new THREE.Scene();
   scene.background = BACKGROUND;
 
+  // TODO: remove this
+  const gridHelper = new THREE.GridHelper(200, 50);
+  gridHelper.position.set(0, -10, 0);
+  scene.add(gridHelper);
+
   // trailer
   const trailer = new Trailer();
   trailer.position.set(0, 0, 0);
   scene.add(trailer);
 
-  const arm = new Arm();
-  arm.position.set(-30, 0, 0);
-  scene.add(arm);
-
-  // const body = new Body();
-  // body.position.set(0, 0, 0);
-  // scene.add(body);
+  const body = new Body();
+  body.position.set(-25, 0, 0);
+  scene.add(body);
 }
 
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
 const camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, 1000);
-camera.position.set(0, 5, 50); // Set camera position (x, y, z)
+camera.position.set(-55, 0, 10); // Set camera position (x, y, z)
+// camera.
+camera.lookAt(0, 0, 0); // Set camera look at position (x, y, z)
 
 // TODO: remove this line
 let controls;

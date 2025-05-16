@@ -49,12 +49,14 @@ export class Trailer extends THREE.Group {
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const hitch = new THREE.Mesh(geometry, material);
     
-    hitch.position.set(18, -7, 0);
+    hitch.position.set(17, -8, 0);
+    
+    hitch.rotation.z = Math.PI / 2;
     this.trailer.add(hitch);
   }
 
   _addAxis() {
-    const geometry = new THREE.BoxGeometry(10, 3, 14);
+    const geometry = new THREE.BoxGeometry(10, 3, 9);
     const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
     const axis = new THREE.Mesh(geometry, material);
 

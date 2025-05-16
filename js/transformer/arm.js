@@ -2,10 +2,11 @@ import * as THREE from "three";
 
 
 export class Arm extends THREE.Group {
-  constructor() {
+  constructor(right = false) {
     super();
+    this.right = right;
     this._addUpperArm();
-    this._addAnthenna();
+    this._addAntennas();
     this._addJunction();
     this._addLowerArm();
     }
@@ -22,22 +23,31 @@ export class Arm extends THREE.Group {
     this.arm.add(upperArm);
   }
 
-  _addAnthenna() {
-    const geometry = new THREE.BoxGeometry(1, 5, 1);
+  _addAntennas() {
+    const geometry = new THREE.BoxGeometry(1, 4, 1);
     const material = new THREE.MeshBasicMaterial({ color: 0xafafaf });
     const anthenna = new THREE.Mesh(geometry, material);
 
-    anthenna.position.set(0, 3.5, -1.5);
+    if(this.right) {
+      anthenna.position.set(0, 3, 1.5);
+    } else {
+      anthenna.position.set(0, 3, -1.5);
+    }
 
     this.arm.add(anthenna);
   }
 
   _addJunction() {
-    const geometry = new THREE.BoxGeometry(2, 2, 1);
+    const geometry = new THREE.BoxGeometry(1, 2, 5);
     const material = new THREE.MeshBasicMaterial({ color: 0xafafaf });
     const junction = new THREE.Mesh(geometry, material);
 
-    junction.position.set(0, 0.75, 1.5);
+    if(this.right) {
+      junction.position.set(0, 0.75, -2);
+    }
+    else {
+      junction.position.set(0, 0.75, 2);
+    }
 
     this.arm.add(junction);
   }

@@ -85,22 +85,21 @@ export class Leg extends THREE.Group {
 }
 
     updateFeet(value) {
-        console.log("value", value);
-        // const min = Math.PI / 2;
-        // const max = 0;
+        const min = Math.PI / 2;
+        const max = 0;
 
-        // const angle = this.footPivot.rotation.z + value;
-        // const newAngle = Math.min(Math.max(angle, min), max);
-        this.footPivot.rotation.z += value;
+        const angle = this.footPivot.rotation.z + value;
+        const newAngle = THREE.MathUtils.clamp(angle, max, min);
+        this.footPivot.rotation.z = newAngle;
     }
 
     updateLeg(value) {
         const min = Math.PI / 2;
         const max = 0;
 
-        const angle = this.footPivot.rotation.z + value;
-        const newAngle = Math.min(Math.max(angle, min), max);
-        this.footPivot.rotation.z = newAngle;
+        const angle = this.leg.rotation.z + value;
+        const newAngle = THREE.MathUtils.clamp(angle, max, min);
+        this.leg.rotation.z = newAngle;
     }
 
 }

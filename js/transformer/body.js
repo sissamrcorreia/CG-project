@@ -137,6 +137,10 @@ export class Body extends THREE.Group {
     return this.rightLeg;
   }
 
+  getLegs() {
+    return [this.leftLeg, this.rightLeg];
+  }
+
   getLeftArm() {
     return this.leftArm
   }

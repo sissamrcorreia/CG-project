@@ -12,9 +12,17 @@ import { Body } from "./transformer/body.js";
 const HEIGHT = window.innerHeight;
 const WIDTH = window.innerWidth;
 const CLOCK = new THREE.Clock();
+const BACKGROUND = new THREE.Color(0xd5edf5);
+
 let pressed_wireframe = false;
 let pressed_trailer_up = false, pressed_trailer_down = false, pressed_trailer_left = false, pressed_trailer_right = false;
 let pressed_arm_left = false, pressed_arm_right = false;
+
+let isAnimating = false;
+let animationStartTime = 0;
+const animationDuration = 2;
+const connectionPoint = new THREE.Vector3(0, 0, 0);
+
 
 let body, trailer;
 let body_box, trailer_box;
@@ -23,7 +31,6 @@ let cameras = [], camera;
 
 let renderer, scene;
 
-const BACKGROUND = new THREE.Color(0xd5edf5);
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -32,31 +39,34 @@ function createScene() {
   scene = new THREE.Scene();
   scene.background = BACKGROUND;
 
-  // TODO: remove this
-  // const gridHelper = new THREE.GridHelper(200, 50);
-  // gridHelper.position.set(0, -10, 0);
-  // scene.add(gridHelper);
-
   // trailer
   trailer = new Trailer();
-  trailer.position.set(0, 0, 0);
+  trailer.position.set(10, 0, 0);
   scene.add(trailer);
 
+  // transformer
   body = new Body();
   body.position.set(-25, -1, 0);
   scene.add(body);
 
+  // AABB boxes
   trailer_box = new THREE.Box3().setFromObject(trailer);
   body_box = new THREE.Box3().setFromObject(body);
+
+  // TODO: remove this
+  const trailerBoxHelper = new THREE.Box3Helper(trailer_box, 0xff0000);
+  const bodyBoxHelper = new THREE.Box3Helper(body_box, 0x00ff00);
+  scene.add(trailerBoxHelper);
+  scene.add(bodyBoxHelper);
 }
 
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
-const positions = new Array(new Array(-40, 0, 0), // frontal
-                            new Array(0, 0, 30), // lateral
-                            new Array(-25, 30, 0), // topo
-                            new Array(-50, 20, 25)); // perspetiva isométrica - projeção perspetiva
+const positions = [[-40, 0, 0],     // frontal
+                   [0, 0, 30],      // lateral
+                   [-25, 30, 0],    // topo
+                   [-50, 20, 25]];  // perspetiva isométrica - projeção perspetiva
 
 for (let i = 0; i < 4; i++) {
     if (i == 3) {
@@ -83,11 +93,6 @@ function setCamera(index) {
 }
 camera = cameras[0];
 
-// camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, 1000);
-// camera.position.set(-55, 0, 10); // Set camera position (x, y, z)
-// // camera.
-// camera.lookAt(0, 0, 0); // Set camera look at position (x, y, z)
-
 // TODO: remove this line
 let controls;
 
@@ -107,31 +112,48 @@ function checkCollisions() {
     console.log("Collision Detected!");
     // Handle the collision
     handleCollisions();
-  } else {
-    // If not colliding
   }
 }
 
 ///////////////////////
 /* HANDLE COLLISIONS */
 ///////////////////////
-function handleCollisions() {}
+function handleCollisions() {
+  if (!isAnimating) {
+    isAnimating = true;
+    animationStartTime = CLOCK.getElapsedTime();
+  }
+}
 
 ////////////
 /* UPDATE */
 ////////////
 function update() {
-  if(pressed_trailer_down) {
-    trailer.updateX(0.3);
-  }
-  if(pressed_trailer_up) {
-    trailer.updateX(-0.3);
-  }
-  if(pressed_trailer_left) {
-    trailer.updateZ(0.3);
-  }
-  if(pressed_trailer_right) {
-    trailer.updateZ(-0.3);
+  if (!isAnimating) {
+    if (pressed_trailer_down) {
+      trailer.updateX(0.3);
+    }
+    if (pressed_trailer_up) {
+      trailer.updateX(-0.3);
+    }
+    if (pressed_trailer_left) {
+      trailer.updateZ(0.3);
+    }
+    if (pressed_trailer_right) {
+      trailer.updateZ(-0.3);
+    }
+  } else {
+    const elapsed = CLOCK.getElapsedTime() - animationStartTime;
+    const t = Math.min(elapsed / animationDuration, 1);
+    
+    const startPosition = trailer.position.clone();
+    trailer.position.lerpVectors(startPosition, connectionPoint, t);
+
+    if (t >= 1) {
+      isAnimating = false;
+      animationStartTime = 0;
+      trailer.position.copy(connectionPoint);
+    }
   }
 
   if(pressed_arm_left) {
@@ -189,8 +211,9 @@ function init() {
 /////////////////////
 function animate() {
   // TODO: remove after this line
-  update();
   controls.update(); // only required if controls.enableDamping = true, or autoRotate is true
+
+  update();
   requestAnimationFrame(animate);
   render();
 }
@@ -240,12 +263,16 @@ function onKeyDown(e) {
     // To control the waist
     case 119: // w
     case 87: // W
-      // body.getLegs().update(1);
+      body.getLegs().forEach(leg => {
+        leg.updateLeg(0.1);
+      });
       break;
 
     case 115: // s
     case 83: // S
-      // body.getLegs().update(-1);
+      body.getLegs().forEach(leg => {
+        leg.updateLeg(-0.1);
+      });
       break;
 
     // TO control the feet

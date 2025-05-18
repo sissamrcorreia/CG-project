@@ -1,9 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Trailer } from "./trailer/trailer.js";
-import { Arm } from "./transformer/arm.js";
 import { Body } from "./transformer/body.js";
-import { Head } from "./transformer/head.js";
 // import { VRButton } from "three/addons/webxr/VRButton.js";
 // import * as Stats from "three/addons/libs/stats.module.js";
 // import { GUI } from "three/addons/libs/lil-gui.module.min.js";
@@ -15,8 +13,10 @@ const HEIGHT = window.innerHeight;
 const WIDTH = window.innerWidth;
 const CLOCK = new THREE.Clock();
 let pressed_wireframe = false;
+let pressed_trailer_up = false, pressed_trailer_down = false, pressed_trailer_left = false, pressed_trailer_right = false;
 
 let body;
+let trailer;
 
 let trailor_velX = [0,0]
 let trailor_velZ = [0,0]
@@ -38,7 +38,7 @@ function createScene() {
   scene.add(gridHelper);
 
   // trailer
-  const trailer = new Trailer();
+  trailer = new Trailer();
   trailer.position.set(0, 0, 0);
   scene.add(trailer);
 
@@ -79,7 +79,21 @@ function handleCollisions() {}
 ////////////
 /* UPDATE */
 ////////////
-function update() {}
+function update() {
+  if(pressed_trailer_down) {
+    trailer.updateX(0.3);
+  }
+  if(pressed_trailer_up) {
+    trailer.updateX(-0.3);
+  }
+  if(pressed_trailer_left) {
+    trailer.updateZ(0.3);
+  }
+  if(pressed_trailer_right) {
+    trailer.updateZ(-0.3);
+  }
+
+}
 
 /////////////
 /* DISPLAY */
@@ -121,6 +135,7 @@ function init() {
 /////////////////////
 function animate() {
   // TODO: remove after this line
+  update();
   controls.update(); // only required if controls.enableDamping = true, or autoRotate is true
   requestAnimationFrame(animate);
   render();
@@ -171,23 +186,23 @@ function onKeyDown(e) {
     // To control the waist
     case 119: // w
     case 87: // W
-
+      body.getLegs().update(1);
       break;
 
     case 115: // s
     case 83: // S
-      
+      body.getLegs().update(-1);
       break;
 
     // TO control the feet
     case 113: // q
     case 81: // Q
-
+      leg.getFeet().update(1);
       break;
 
     case 97: // a
     case 65: // A
-
+      leg.getFeet().update(-1);
       break;
     
     // To control the arms
@@ -204,16 +219,31 @@ function onKeyDown(e) {
     // To control the head
     case 82: // 'R'
     case 114: // 'r'
-        body.getHead().update(0.1);
+        body.getHead().update(0.3);
         break;
     
     case 102: // f
     case 70: // F
-        body.getHead().update(-0.1);
+        body.getHead().update(-0.3);
         break;
+    
+    
+    // To control the trailer
+    case 38: // up
+      pressed_trailer_up = true;
+      break;
+      
+    case 40: // down
+      pressed_trailer_down = true;
       break;
     
+    case 37: // left
+      pressed_trailer_left = true;
+      break;
     
+    case 39: // right
+      pressed_trailer_right = true;
+      break;
     
     
     case 55: // 7
@@ -287,6 +317,23 @@ function onKeyUp(e) {
     case 102: // f
     case 70: // F
 
+      break;
+    
+    // To control the trailer
+    case 38: // up
+      pressed_trailer_up = false;
+      break;
+      
+    case 40: // down
+      pressed_trailer_down = false;
+      break;
+    
+    case 37: // left
+      pressed_trailer_left = false;
+      break;
+    
+    case 39: // right
+      pressed_trailer_right = false;
       break;
   }
 }

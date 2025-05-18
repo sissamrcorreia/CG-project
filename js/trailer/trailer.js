@@ -74,7 +74,11 @@ export class Trailer extends THREE.Group {
     this.getObject().translateX(value);
   }
 
-  update() {
-    // Update logic for the trailer
+  updateX(x) {
+    this.trailer.position.x += x;
+  }
+
+  updateZ(z) {
+    this.trailer.position.z += z;
   }
 }

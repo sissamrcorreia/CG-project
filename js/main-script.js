@@ -16,14 +16,10 @@ let pressed_wireframe = false;
 let pressed_trailer_up = false, pressed_trailer_down = false, pressed_trailer_left = false, pressed_trailer_right = false;
 let pressed_arm_left = false, pressed_arm_right = false;
 
-let body;
-let trailer;
+let body, trailer;
+let body_box, trailer_box;
 
 let cameras = [], camera;
-
-
-let trailor_velX = [0,0]
-let trailor_velZ = [0,0]
 
 let renderer, scene;
 
@@ -49,6 +45,9 @@ function createScene() {
   body = new Body();
   body.position.set(-25, -1, 0);
   scene.add(body);
+
+  trailer_box = new THREE.Box3().setFromObject(trailer);
+  body_box = new THREE.Box3().setFromObject(body);
 }
 
 //////////////////////
@@ -103,7 +102,15 @@ let controls;
 //////////////////////
 /* CHECK COLLISIONS */
 //////////////////////
-function checkCollisions() {}
+function checkCollisions() {
+  if (trailerBox.intersectsBox(robotBox)) {
+    console.log("Collision Detected!");
+    // Handle the collision
+    handleCollisions();
+  } else {
+    // If not colliding
+  }
+}
 
 ///////////////////////
 /* HANDLE COLLISIONS */
@@ -136,6 +143,7 @@ function update() {
     body.getLeftArm().update(-0.3);
   }
 
+  checkCollisions();
 }
 
 /////////////
@@ -240,12 +248,14 @@ function onKeyDown(e) {
     // TO control the feet
     case 113: // q
     case 81: // Q
-      // leg.getFeet().update(1);
+      body.getLeftLeg().updateFeet(0.3);
+      body.getRightLeg().updateFeet(0.3);
       break;
 
     case 97: // a
     case 65: // A
-      // leg.getFeet().update(-1);
+      body.getLeftLeg().updateFeet(-0.3);
+      body.getRightLeg().updateFeet(-0.3);
       break;
     
     // To control the arms

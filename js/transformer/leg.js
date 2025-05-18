@@ -60,25 +60,47 @@ export class Leg extends THREE.Group {
     }
 
     _addFeet() {
-            // Simple foot: a box at the bottom of the leg
-            const footGeometry = new THREE.BoxGeometry(3, 2, 3.5);
-            const footMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-            const foot = new THREE.Mesh(footGeometry, footMaterial);
+    // Criar um pivô para o pé
+    const footPivot = new THREE.Object3D();
     
-            foot.position.set(-1.5, -14.5, -2);
-
-            // foot.rotation.z = -Math.PI / 2; // Rotate the foot to be horizontal
+    // Posicionar o pivô no ponto de articulação (tornozelo, por exemplo)
+    footPivot.position.set(-1.5, -13.5, -2); // Ajuste conforme necessário
     
-            this.leg.add(foot);
-        }
+    // Criar a geometria e material do pé
+    const footGeometry = new THREE.BoxGeometry(3, 2, 3.5);
+    const footMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    const foot = new THREE.Mesh(footGeometry, footMaterial);
+    
+    // Posicionar o pé em relação ao pivô (deslocar para baixo para que o pivô esteja na borda superior do pé)
+    foot.position.set(0, -1, 0); // Ajuste para que o pé fique abaixo do pivô
+    
+    // Adicionar o pé ao pivô
+    footPivot.add(foot);
+    
+    // Adicionar o pivô ao this.leg
+    this.leg.add(footPivot);
+    
+    // Guardar o pivô para usar na rotação
+    this.footPivot = footPivot;
+}
 
-    update() {
+    updateFeet(value) {
+        console.log("value", value);
+        // const min = Math.PI / 2;
+        // const max = 0;
+
+        // const angle = this.footPivot.rotation.z + value;
+        // const newAngle = Math.min(Math.max(angle, min), max);
+        this.footPivot.rotation.z += value;
+    }
+
+    updateLeg(value) {
         const min = Math.PI / 2;
         const max = 0;
 
-        const angle = this.leg.rotation.z + value;
+        const angle = this.footPivot.rotation.z + value;
         const newAngle = Math.min(Math.max(angle, min), max);
-        this.leg.rotation.z = newAngle;
+        this.footPivot.rotation.z = newAngle;
     }
 
 }

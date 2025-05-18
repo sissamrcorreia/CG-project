@@ -103,7 +103,7 @@ let controls;
 /* CHECK COLLISIONS */
 //////////////////////
 function checkCollisions() {
-  if (trailerBox.intersectsBox(robotBox)) {
+  if (trailer_box.intersectsBox(body_box)) {
     console.log("Collision Detected!");
     // Handle the collision
     handleCollisions();
@@ -142,6 +142,9 @@ function update() {
     body.getRightArm().update(0.3);
     body.getLeftArm().update(-0.3);
   }
+
+  trailer_box.setFromObject(trailer);
+  body_box.setFromObject(body);
 
   checkCollisions();
 }

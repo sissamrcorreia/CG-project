@@ -63,11 +63,11 @@ export class Body extends THREE.Group {
   }
 
   _addWheels() {
-    const wheelGeometry = new THREE.CylinderGeometry(2, 2, 1, 32);
+    const wheelGeometry = new THREE.CylinderGeometry(2, 2, 2, 32);
     const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const wheelPositions = [
-      [2, -9, 5],
-      [2, -9, -5],
+      [2, -9, 5.5],
+      [2, -9, -5.5],
     ];
     wheelPositions.forEach((pos) => {
       const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
@@ -85,11 +85,13 @@ export class Body extends THREE.Group {
     const leftArm = new Arm(false); // false for left arm
     leftArm.position.set(-3.5, 1, -4); // Position on the left side of the chest
     this.body.add(leftArm);
+    this.leftArm = leftArm;
 
     // Create right arm
     const rightArm = new Arm(true); // true for right arm
     rightArm.position.set(-3.5, 1, 12); // Position on the right side of the chest
     this.body.add(rightArm);
+    this.rightArm = rightArm;
   }
 
   ///////////////////////
@@ -110,19 +112,37 @@ export class Body extends THREE.Group {
   _addLegs() {
     // Create left leg
     const leftLeg = new Leg();
-    leftLeg.position.set(-2, -8, -0.5); // Position on the left side of the abdomen
+    leftLeg.position.set(0, -8, -0.5); // Position on the left side of the abdomen
     this.body.add(leftLeg);
+    this.leftLeg = leftLeg;
 
     // Create right leg
     const rightLeg = new Leg(true);
-    rightLeg.position.set(-2, -8, 4.5); // Position on the right side of the abdomen
+    rightLeg.position.set(0, -8, 4.5); // Position on the right side of the abdomen
     this.body.add(rightLeg);
+    this.rightLeg = rightLeg;
   }
   ///////////////////////
 
 
   getHead() {
     return this.head;
+  }
+
+  getLeftLeg() {
+    return this.leftLeg;
+  }
+
+  getRightLeg() {
+    return this.rightLeg;
+  }
+
+  getLeftArm() {
+    return this.leftArm
+  }
+
+  getRightArm() {
+    return this.rightArm
   }
 
   update() {

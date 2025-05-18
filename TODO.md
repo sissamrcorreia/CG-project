@@ -1,5 +1,5 @@
 * [X] Plano com background claro
-* [ ] Câmaras fixas de projeção ortogonal com vistas frontal, lateral e de topo sobre a cena ‘1’ (frontal), ‘2’ (lateral), ‘3’ (topo) e ‘4’ (perspetiva)
+* [X] Câmaras fixas de projeção ortogonal com vistas frontal, lateral e de topo sobre a cena ‘1’ (frontal), ‘2’ (lateral), ‘3’ (topo) e ‘4’ (perspetiva)
 * [X] Fazer o robô apenas com cilindros, cubos e cones
 * [X] Reboque com cilindros e cubos
 * [ ] Teclado:

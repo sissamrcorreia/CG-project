@@ -28,13 +28,13 @@ export class Trailer extends THREE.Group {
   }
 
   _addWheels() {
-    const wheelGeometry = new THREE.CylinderGeometry(2, 2, 1, 32);
+    const wheelGeometry = new THREE.CylinderGeometry(2, 2, 2, 32);
     const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const wheelPositions = [
-      [-8.5, -10, 5],
-      [-13.5, -10, 5],
-      [-8.5, -10, -5],
-      [-13.5, -10, -5],
+      [-8.5, -10, 5.5],
+      [-13.5, -10, 5.5],
+      [-8.5, -10, -5.5],
+      [-13.5, -10, -5.5],
     ];
     wheelPositions.forEach((pos) => {
       const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);

@@ -16,7 +16,7 @@ export class Leg extends THREE.Group {
         this.leg = new THREE.Object3D();
         this.add(this.leg);
         
-        const geometry = new THREE.BoxGeometry(1.5, 3, 1.5);
+        const geometry = new THREE.BoxGeometry(2, 3, 1.5);
         const material = new THREE.MeshBasicMaterial({color: 0xafafaf});
         const upperLeg = new THREE.Mesh(geometry, material);
 
@@ -36,17 +36,17 @@ export class Leg extends THREE.Group {
     }
 
     _addWheels() {
-        const wheelGeometry = new THREE.CylinderGeometry(2, 2, 1, 32);
+        const wheelGeometry = new THREE.CylinderGeometry(2, 2, 2, 32);
         const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
         let wheelPositions = [
-        [-0.5, -6.5, -4],
-        [-0.5, -11, -4],
+        [-0.5, -7.5, -4.7],
+        [-0.5, -12, -4.7],
         ];
 
         if(this.right) {
             wheelPositions = [
-                [-0.5, -6.5, 0.2],
-                [-0.5, -11, 0.2],
+                [-0.5, -7.5, 0.7],
+                [-0.5, -12, 0.7],
             ];
         }
 
@@ -61,11 +61,11 @@ export class Leg extends THREE.Group {
 
     _addFeet() {
             // Simple foot: a box at the bottom of the leg
-            const footGeometry = new THREE.BoxGeometry(5, 2, 3.5);
-            const footMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
+            const footGeometry = new THREE.BoxGeometry(3, 2, 3.5);
+            const footMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
             const foot = new THREE.Mesh(footGeometry, footMaterial);
     
-            foot.position.set(-3.5, -14.5, -2);
+            foot.position.set(-1.5, -14.5, -2);
 
             // foot.rotation.z = -Math.PI / 2; // Rotate the foot to be horizontal
     
@@ -73,7 +73,12 @@ export class Leg extends THREE.Group {
         }
 
     update() {
-        // Update logic for the leg can be added here
+        const min = Math.PI / 2;
+        const max = 0;
+
+        const angle = this.leg.rotation.z + value;
+        const newAngle = Math.min(Math.max(angle, min), max);
+        this.leg.rotation.z = newAngle;
     }
 
 }

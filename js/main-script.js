@@ -19,6 +19,9 @@ let pressed_arm_left = false, pressed_arm_right = false;
 let body;
 let trailer;
 
+let cameras = [], camera;
+
+
 let trailor_velX = [0,0]
 let trailor_velZ = [0,0]
 
@@ -34,9 +37,9 @@ function createScene() {
   scene.background = BACKGROUND;
 
   // TODO: remove this
-  const gridHelper = new THREE.GridHelper(200, 50);
-  gridHelper.position.set(0, -10, 0);
-  scene.add(gridHelper);
+  // const gridHelper = new THREE.GridHelper(200, 50);
+  // gridHelper.position.set(0, -10, 0);
+  // scene.add(gridHelper);
 
   // trailer
   trailer = new Trailer();
@@ -51,10 +54,40 @@ function createScene() {
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
-const camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, 1000);
-camera.position.set(-55, 0, 10); // Set camera position (x, y, z)
-// camera.
-camera.lookAt(0, 0, 0); // Set camera look at position (x, y, z)
+const positions = new Array(new Array(-40, 0, 0), // frontal
+                            new Array(0, 0, 30), // lateral
+                            new Array(-25, 30, 0), // topo
+                            new Array(-50, 20, 25)); // perspetiva isométrica - projeção perspetiva
+
+for (let i = 0; i < 4; i++) {
+    if (i == 3) {
+        camera = new THREE.PerspectiveCamera(95, WIDTH / HEIGHT, 1, 1000);
+    } else {
+        camera = new THREE.OrthographicCamera(WIDTH / -20,
+                                        WIDTH / 20,
+                                        HEIGHT / 20,
+                                        HEIGHT / -20,
+                                        -50,
+                                        1000);
+    }
+
+    camera.position.set(positions[i][0], positions[i][1], positions[i][2]);
+    if(i == 2 || i == 3) {
+      camera.lookAt(-25, -1, 0); // Set camera look at position (x, y, z)
+    }
+    cameras.push(camera);
+}
+
+function setCamera(index) {
+  if (index < 0 || index >= cameras.length) index = 0;
+  camera = cameras[index];
+}
+camera = cameras[0];
+
+// camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, 1000);
+// camera.position.set(-55, 0, 10); // Set camera position (x, y, z)
+// // camera.
+// camera.lookAt(0, 0, 0); // Set camera look at position (x, y, z)
 
 // TODO: remove this line
 let controls;
@@ -172,25 +205,25 @@ function onKeyDown(e) {
     // Frontal camera
     case 49: // 1
     case 97: // 1 (numpad)
-
+      setCamera(0);
       break;
     
     // Lateral camera
     case 50: // 2
     case 98: // 2 (numpad)
-
+      setCamera(1);
       break;
 
     // Top camera
     case 51: // 3
     case 99: // 3 (numpad)
-
+      setCamera(2);
       break;
 
     // Prespective camera
     case 52: // 4
     case 100: // 4 (numpad)
-
+      setCamera(3);
       break;
 
     // To control the waist

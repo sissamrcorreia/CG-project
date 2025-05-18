@@ -62,8 +62,15 @@ export class Arm extends THREE.Group {
     this.arm.add(lowerArm);
   }
 
-  update() {
-    // Update logic for the arm
+  update(z) {
+    // (-3.5, 1, -4) left
+    // (-3.5, 1, 12) right
+    const minZ = this.right ? -7 : -4;
+    const maxZ = this.right ? -4 : -1;
+
+    let newZ = this.arm.position.z + z;
+    newZ = Math.max(minZ, Math.min(maxZ, newZ));
+    this.arm.position.z = newZ;
   }
 
 }

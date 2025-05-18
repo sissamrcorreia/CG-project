@@ -14,6 +14,7 @@ const WIDTH = window.innerWidth;
 const CLOCK = new THREE.Clock();
 let pressed_wireframe = false;
 let pressed_trailer_up = false, pressed_trailer_down = false, pressed_trailer_left = false, pressed_trailer_right = false;
+let pressed_arm_left = false, pressed_arm_right = false;
 
 let body;
 let trailer;
@@ -91,6 +92,15 @@ function update() {
   }
   if(pressed_trailer_right) {
     trailer.updateZ(-0.3);
+  }
+
+  if(pressed_arm_left) {
+    body.getRightArm().update(-0.3);
+    body.getLeftArm().update(0.3);
+  }
+  if(pressed_arm_right) {
+    body.getRightArm().update(0.3);
+    body.getLeftArm().update(-0.3);
   }
 
 }
@@ -186,34 +196,34 @@ function onKeyDown(e) {
     // To control the waist
     case 119: // w
     case 87: // W
-      body.getLegs().update(1);
+      // body.getLegs().update(1);
       break;
 
     case 115: // s
     case 83: // S
-      body.getLegs().update(-1);
+      // body.getLegs().update(-1);
       break;
 
     // TO control the feet
     case 113: // q
     case 81: // Q
-      leg.getFeet().update(1);
+      // leg.getFeet().update(1);
       break;
 
     case 97: // a
     case 65: // A
-      leg.getFeet().update(-1);
+      // leg.getFeet().update(-1);
       break;
     
     // To control the arms
     case 101: // e
     case 69: // E
-
+      pressed_arm_left = true;
       break;
 
     case 100: // d
     case 68: // D
-
+      pressed_arm_right = true;
       break;
     
     // To control the head
@@ -300,12 +310,12 @@ function onKeyUp(e) {
     // To control the arms
     case 101: // e
     case 69: // E
-
+      pressed_arm_left = false;
       break;
 
     case 100: // d
     case 68: // D
-
+      pressed_arm_right = false;
       break;
     
     // To control the head

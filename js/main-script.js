@@ -13,9 +13,26 @@ const WIDTH = window.innerWidth;
 const CLOCK = new THREE.Clock();
 const BACKGROUND = new THREE.Color(0xd5edf5);
 
-let pressed_wireframe = false;
-let pressed_trailer_up = false, pressed_trailer_down = false, pressed_trailer_left = false, pressed_trailer_right = false;
-let pressed_arm_left = false, pressed_arm_right = false;
+// Input flags
+let pressed = {
+  wireframe: false,
+  trailer_up: false,
+  trailer_down: false,
+  trailer_left: false,
+  trailer_right: false,
+  arm_left: false,
+  arm_right: false,
+  legs_up: false,
+  legs_down: false,
+  feet_up: false,
+  feet_down: false,
+  head_up: false,
+  head_down: false,
+  camera_1: false,
+  camera_2: false,
+  camera_3: false,
+  camera_4: false
+};
 
 let isAnimating = false;
 let animationStartTime = 0;
@@ -493,16 +510,25 @@ function handleCollisions() {
   }
 }
 
+function toggleWireframe() {
+  scene.traverse(node => {
+    if (node instanceof THREE.Mesh) {
+      node.material.wireframe = !node.material.wireframe;
+    }
+  });
+}
+
 
 ////////////
 /* UPDATE */
 ////////////
 function update() {
   if (!isAnimating) {
-    if (pressed_trailer_down) trailer.updateX(0.3);
-    if (pressed_trailer_up) trailer.updateX(-0.3);
-    if (pressed_trailer_left) trailer.updateZ(0.3);
-    if (pressed_trailer_right) trailer.updateZ(-0.3);
+    // Handle trailer movement
+    if (pressed.trailer_down) trailer.updateX(0.3);
+    if (pressed.trailer_up) trailer.updateX(-0.3);
+    if (pressed.trailer_left) trailer.updateZ(0.3);
+    if (pressed.trailer_right) trailer.updateZ(-0.3);
   } else {
     const elapsed = CLOCK.getElapsedTime() - animationStartTime;
     const t = Math.min(elapsed / animationDuration, 1);
@@ -517,15 +543,49 @@ function update() {
     }
   }
 
-  if(pressed_arm_left) {
+  // Handle arm movement
+  if(pressed.arm_left) {
     body.getRightArm().update(-0.3);
     body.getLeftArm().update(0.3);
   }
-  if(pressed_arm_right) {
+  if(pressed.arm_right) {
     body.getRightArm().update(0.3);
     body.getLeftArm().update(-0.3);
   }
 
+  // Handle leg movement
+  if(pressed.legs_up) {
+    body.getLegs().forEach(leg => leg.updateLeg(0.1));
+  }
+  if(pressed.legs_down) {
+    body.getLegs().forEach(leg => leg.updateLeg(-0.1));
+  }
+
+  // Handle feet movement
+  if(pressed.feet_up) {
+    body.getLeftLeg().updateFeet(0.3);
+    body.getRightLeg().updateFeet(0.3);
+  }
+  if(pressed.feet_down) {
+    body.getLeftLeg().updateFeet(-0.3);
+    body.getRightLeg().updateFeet(-0.3);
+  }
+
+  // Handle head movement
+  if(pressed.head_up) {
+    body.getHead().update(0.3);
+  }
+  if(pressed.head_down) {
+    body.getHead().update(-0.3);
+  }
+
+  // Handle camera changes
+  if(pressed.camera_1) { setCamera(0); pressed.camera_1 = false; }
+  if(pressed.camera_2) { setCamera(1); pressed.camera_2 = false; }
+  if(pressed.camera_3) { setCamera(2); pressed.camera_3 = false; }
+  if(pressed.camera_4) { setCamera(3); pressed.camera_4 = false; }
+
+  // Update collision boxes
   trailer_box.setFromObject(trailer);
   body_box.setFromObject(body);
 
@@ -560,52 +620,38 @@ function onResize() {
 function onKeyDown(e) {
   switch (e.keyCode) {
     // Camera controls
-    case 49: case 97: setCamera(0); break;  // 1
-    case 50: case 98: setCamera(1); break;  // 2
-    case 51: case 99: setCamera(2); break;  // 3
-    case 52: case 100: setCamera(3); break; // 4
+    case 49: case 97: pressed.camera_1 = true; break;  // 1
+    case 50: case 98: pressed.camera_2 = true; break;  // 2
+    case 51: case 99: pressed.camera_3 = true; break;  // 3
+    case 52: case 100: pressed.camera_4 = true; break; // 4
     
     // Leg controls
-    case 119: case 87:  // W
-      body.getLegs().forEach(leg => leg.updateLeg(0.1));
-      break;
-    case 115: case 83:  // S
-      body.getLegs().forEach(leg => leg.updateLeg(-0.1));
-      break;
+    case 119: case 87: pressed.legs_up = true; break;    // W
+    case 115: case 83: pressed.legs_down = true; break;  // S
     
     // Feet controls
-    case 113: case 81:  // Q
-      body.getLeftLeg().updateFeet(0.3);
-      body.getRightLeg().updateFeet(0.3);
-      break;
-    case 97: case 65:   // A
-      body.getLeftLeg().updateFeet(-0.3);
-      body.getRightLeg().updateFeet(-0.3);
-      break;
+    case 113: case 81: pressed.feet_up = true; break;    // Q
+    case 97: case 65:  pressed.feet_down = true; break;  // A
     
     // Arm controls
-    case 101: case 69: pressed_arm_left = true; break;  // E
-    case 100: case 68: pressed_arm_right = true; break; // D
+    case 101: case 69: pressed.arm_left = true; break;   // E
+    case 100: case 68: pressed.arm_right = true; break;  // D
     
     // Head controls
-    case 82: case 114: body.getHead().update(0.3); break;  // R
-    case 102: case 70: body.getHead().update(-0.3); break; // F
+    case 82: case 114: pressed.head_up = true; break;    // R
+    case 102: case 70: pressed.head_down = true; break;  // F
     
     // Trailer controls
-    case 38: pressed_trailer_up = true; break;    // up
-    case 40: pressed_trailer_down = true; break;  // down
-    case 37: pressed_trailer_left = true; break;  // left
-    case 39: pressed_trailer_right = true; break; // right
+    case 38: pressed.trailer_up = true; break;    // up
+    case 40: pressed.trailer_down = true; break;  // down
+    case 37: pressed.trailer_left = true; break;  // left
+    case 39: pressed.trailer_right = true; break; // right
     
     // Wireframe toggle
-    case 55: case 103:  // 7
-      if (!pressed_wireframe) {
-        scene.traverse(node => {
-          if (node instanceof THREE.Mesh) {
-            node.material.wireframe = !node.material.wireframe;
-          }
-        });
-        pressed_wireframe = true;
+    case 55: case 103: // 7
+      if (!pressed.wireframe) {
+        toggleWireframe();
+        pressed.wireframe = true;
       }
       break;
   }
@@ -618,26 +664,29 @@ function onKeyDown(e) {
 function onKeyUp(e) {
   switch (e.keyCode) {
     // Leg controls
-    // TODO: add leg controls
+    case 119: case 87: pressed.legs_up = false; break;    // W
+    case 115: case 83: pressed.legs_down = false; break;  // S
     
     // Feet controls
-    // TODO; add feet controls
+    case 113: case 81: pressed.feet_up = false; break;    // Q
+    case 97: case 65:  pressed.feet_down = false; break;  // A
     
     // Arm controls
-    case 101: case 69: pressed_arm_left = false; break;  // E
-    case 100: case 68: pressed_arm_right = false; break; // D
+    case 101: case 69: pressed.arm_left = false; break;   // E
+    case 100: case 68: pressed.arm_right = false; break;  // D
     
     // Head controls
-    // TODO: add head controls
+    case 82: case 114: pressed.head_up = false; break;    // R
+    case 102: case 70: pressed.head_down = false; break;  // F
     
     // Trailer controls
-    case 38: pressed_trailer_up = false; break;    // up
-    case 40: pressed_trailer_down = false; break;  // down
-    case 37: pressed_trailer_left = false; break;  // left
-    case 39: pressed_trailer_right = false; break; // right
-    
+    case 38: pressed.trailer_up = false; break;    // up
+    case 40: pressed.trailer_down = false; break;  // down
+    case 37: pressed.trailer_left = false; break;  // left
+    case 39: pressed.trailer_right = false; break; // right
+
     // Wireframe toggle
-    case 55: case 103: pressed_wireframe = false; break; // 7
+    case 55: case 103: pressed.wireframe = false; break;  // 7
   }
 }
 

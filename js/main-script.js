@@ -4,6 +4,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 // import * as Stats from "three/addons/libs/stats.module.js";
 // import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
+
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
@@ -21,13 +22,13 @@ let animationStartTime = 0;
 const animationDuration = 2;
 const connectionPoint = new THREE.Vector3(0, 0, 0);
 
-
 let body, trailer;
 let body_box, trailer_box;
 
 let cameras = [], camera;
 
 let renderer, scene;
+
 
 ///////////////////////
 /* CLASS DEFINITIONS */
@@ -156,7 +157,7 @@ class Head extends THREE.Group {
     const angle = this.head.rotation.z + value;
     const newAngle = Math.min(Math.max(angle, min), max);
     this.head.rotation.z = newAngle;
-  }  
+  }
 }
 
 class Leg extends THREE.Group {
@@ -406,6 +407,7 @@ class Trailer extends THREE.Group {
   updateZ(z) { this.trailer.position.z += z; }
 }
 
+
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
@@ -432,6 +434,7 @@ function createScene() {
   scene.add(bodyBoxHelper);
 }
 
+
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
@@ -440,7 +443,7 @@ function setupCameras() {
     [-40, 0, 0],     // frontal
     [0, 0, 30],      // lateral
     [-25, 30, 0],    // topo
-    [-50, 20, 25]    // perspetiva isométrica
+    [-50, 20, 25]    // perspetiva
   ];
 
   for (let i = 0; i < 4; i++) {
@@ -468,6 +471,7 @@ function setCamera(index) {
   camera = cameras[index];
 }
 
+
 //////////////////////
 /* CHECK COLLISIONS */
 //////////////////////
@@ -478,6 +482,7 @@ function checkCollisions() {
   }
 }
 
+
 ///////////////////////
 /* HANDLE COLLISIONS */
 ///////////////////////
@@ -487,6 +492,7 @@ function handleCollisions() {
     animationStartTime = CLOCK.getElapsedTime();
   }
 }
+
 
 ////////////
 /* UPDATE */
@@ -526,6 +532,7 @@ function update() {
   checkCollisions();
 }
 
+
 /////////////
 /* DISPLAY */
 /////////////
@@ -545,6 +552,7 @@ function onResize() {
     camera.updateProjectionMatrix();
   }
 }
+
 
 ///////////////////////
 /* KEY DOWN CALLBACK */
@@ -603,6 +611,7 @@ function onKeyDown(e) {
   }
 }
 
+
 ///////////////////////
 /* KEY UP CALLBACK */
 ///////////////////////
@@ -632,6 +641,7 @@ function onKeyUp(e) {
   }
 }
 
+
 ////////////////////////////////
 /* INITIALIZE ANIMATION CYCLE */
 ////////////////////////////////
@@ -655,6 +665,7 @@ function init() {
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
 }
+
 
 /////////////////////
 /* ANIMATION CYCLE */

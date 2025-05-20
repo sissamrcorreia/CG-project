@@ -99,7 +99,7 @@ export class Body extends THREE.Group {
   ///////////////////////
   _addHead() {
     const head = new Head();
-    head.position.set(0, 4.5, 0);
+    head.position.set(0.5, 4.5, 0);
     this.body.add(head);
 
     return head;

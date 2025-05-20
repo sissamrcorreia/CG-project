@@ -1,7 +1,5 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { Trailer } from "./trailer/trailer.js";
-import { Body } from "./transformer/body.js";
 // import { VRButton } from "three/addons/webxr/VRButton.js";
 // import * as Stats from "three/addons/libs/stats.module.js";
 // import { GUI } from "three/addons/libs/lil-gui.module.min.js";
@@ -31,6 +29,382 @@ let cameras = [], camera;
 
 let renderer, scene;
 
+///////////////////////
+/* CLASS DEFINITIONS */
+///////////////////////
+class Arm extends THREE.Group {
+  constructor(right = false) {
+    super();
+    this.right = right;
+    this._addUpperArm();
+    this._addAntennas();
+    this._addJunction();
+    this._addLowerArm();
+  }
+
+  _addUpperArm() {
+    this.arm = new THREE.Object3D();
+    this.arm.position.set(5, -1, -4);
+    this.add(this.arm);
+    
+    const geometry = new THREE.BoxGeometry(2, 5, 2);
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const upperArm = new THREE.Mesh(geometry, material);
+    this.arm.add(upperArm);
+  }
+
+  _addAntennas() {
+    const geometry = new THREE.BoxGeometry(1, 4, 1);
+    const material = new THREE.MeshBasicMaterial({ color: 0xafafaf });
+    const anthenna = new THREE.Mesh(geometry, material);
+
+    if(this.right) {
+      anthenna.position.set(0, 3, 1.5);
+    } else {
+      anthenna.position.set(0, 3, -1.5);
+    }
+
+    this.arm.add(anthenna);
+  }
+
+  _addJunction() {
+    const geometry = new THREE.BoxGeometry(1, 2, 5);
+    const material = new THREE.MeshBasicMaterial({ color: 0xafafaf });
+    const junction = new THREE.Mesh(geometry, material);
+
+    if(this.right) {
+      junction.position.set(0, 0.75, -2);
+    }
+    else {
+      junction.position.set(0, 0.75, 2);
+    }
+
+    this.arm.add(junction);
+  }
+
+  _addLowerArm() {
+    const geometry = new THREE.BoxGeometry(4, 2, 2);
+    const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    const lowerArm = new THREE.Mesh(geometry, material);
+    lowerArm.position.set(-1, -3.5, 0);
+    this.arm.add(lowerArm);
+  }
+
+  update(z) {
+    const minZ = this.right ? -7 : -4;
+    const maxZ = this.right ? -4 : -1;
+    let newZ = this.arm.position.z + z;
+    newZ = Math.max(minZ, Math.min(maxZ, newZ));
+    this.arm.position.z = newZ;
+  }
+}
+
+class Head extends THREE.Group {
+  constructor() {
+    super();
+    this._addHead();
+    this._addEyes();
+    this._addAntennas();
+  }
+
+  _addHead() {
+    this.head = new THREE.Object3D();
+    this.add(this.head);
+    
+    const geometry = new THREE.BoxGeometry(4, 4, 5);
+    const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    const head = new THREE.Mesh(geometry, material);
+    head.position.set(0, 0, 0);
+    this.head.add(head);
+  }
+
+  _addEyes() {
+    const geometry = new THREE.BoxGeometry(0.5, 1, 1);
+    const material = new THREE.MeshBasicMaterial({ color: 0xefefef });
+
+    const leftEye = new THREE.Mesh(geometry, material);
+    const rightEye = new THREE.Mesh(geometry, material);
+
+    leftEye.position.set(-2, 0, -1.5);
+    rightEye.position.set(-2, 0, 1.5);
+
+    const eyes = new THREE.Object3D();
+    eyes.add(leftEye);
+    eyes.add(rightEye);
+    this.head.add(eyes);
+  }
+
+  _addAntennas() {
+    const geometry = new THREE.BoxGeometry(1, 3, 1);
+    const material = new THREE.MeshBasicMaterial({ color: 0xafafaf });
+
+    const leftAntenna = new THREE.Mesh(geometry, material);
+    const rightAntenna = new THREE.Mesh(geometry, material);
+
+    leftAntenna.position.set(0, 1.5, -3);
+    rightAntenna.position.set(0, 1.5, 3);
+
+    const antennas = new THREE.Object3D();
+    antennas.add(leftAntenna);
+    antennas.add(rightAntenna);
+    this.head.add(antennas);
+  }
+
+  update(value) {
+    const min = -3*Math.PI / 2;
+    const max = 0;
+    const angle = this.head.rotation.z + value;
+    const newAngle = Math.min(Math.max(angle, min), max);
+    this.head.rotation.z = newAngle;
+  }  
+}
+
+class Leg extends THREE.Group {
+  constructor(right = false) {
+    super();
+    this.right = right;
+    this._addUperLeg();
+    this._addBottomLeg();
+    this._addWheels();
+    this._addFeet();
+  }
+
+  _addUperLeg() {
+    this.leg = new THREE.Object3D();
+    this.add(this.leg);
+    
+    const geometry = new THREE.BoxGeometry(2, 3, 1.5);
+    const material = new THREE.MeshBasicMaterial({color: 0xafafaf});
+    const upperLeg = new THREE.Mesh(geometry, material);
+    upperLeg.position.set(0, -3, -2);
+    this.leg.add(upperLeg);
+  }
+
+  _addBottomLeg() {
+    const geometry = new THREE.BoxGeometry(3.5, 9, 3.5);
+    const material = new THREE.MeshBasicMaterial({color: 0x0000ff});
+    const bottomLeg = new THREE.Mesh(geometry, material);
+    bottomLeg.position.set(0, -9, -2);
+    this.leg.add(bottomLeg);
+  }
+
+  _addWheels() {
+    const wheelGeometry = new THREE.CylinderGeometry(2, 2, 2, 32);
+    const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    let wheelPositions = [
+      [-0.5, -7.5, -4.7],
+      [-0.5, -12, -4.7],
+    ];
+
+    if(this.right) {
+      wheelPositions = [
+        [-0.5, -7.5, 0.7],
+        [-0.5, -12, 0.7],
+      ];
+    }
+
+    wheelPositions.forEach((pos) => {
+      const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+      wheel.rotation.x = Math.PI / 2;
+      wheel.position.set(...pos);
+      this.leg.add(wheel);
+    });
+  }
+
+  _addFeet() {
+    const footPivot = new THREE.Object3D();
+    footPivot.position.set(-1.5, -13.5, -2);
+    
+    const footGeometry = new THREE.BoxGeometry(3, 2, 3.5);
+    const footMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    const foot = new THREE.Mesh(footGeometry, footMaterial);
+    foot.position.set(0, -1, 0);
+    
+    footPivot.add(foot);
+    this.leg.add(footPivot);
+    this.footPivot = footPivot;
+  }
+
+  updateFeet(value) {
+    const min = Math.PI / 2;
+    const max = 0;
+    const angle = this.footPivot.rotation.z + value;
+    const newAngle = THREE.MathUtils.clamp(angle, max, min);
+    this.footPivot.rotation.z = newAngle;
+  }
+
+  updateLeg(value) {
+    const min = Math.PI / 2;
+    const max = 0;
+    const angle = this.leg.rotation.z + value;
+    const newAngle = THREE.MathUtils.clamp(angle, max, min);
+    this.leg.rotation.z = newAngle;
+  }
+}
+
+class Body extends THREE.Group {
+  constructor() {
+    super();
+    this._addChest();
+    this._addAbdomen();
+    this._addBack();
+    this._addWaist();
+    this._addWheels();
+    this._addArms();
+    this.head = this._addHead();
+    this._addLegs();
+  }
+
+  _addChest() {
+    this.body = new THREE.Object3D();
+    this.add(this.body);
+
+    const geometry = new THREE.BoxGeometry(3, 5, 12);
+    const material = new THREE.MeshBasicMaterial({ color: 0xed2424 });
+    const chest = new THREE.Mesh(geometry, material);
+    chest.position.set(-1, 0, 0);
+    this.body.add(chest);
+  }
+
+  _addBack() {
+    const geometry = new THREE.BoxGeometry(2, 5, 8);
+    const material = new THREE.MeshBasicMaterial({ color: 0xed2424 });
+    const back = new THREE.Mesh(geometry, material);
+    back.position.set(1.5, 0, 0);
+    this.body.add(back);
+  }
+
+  _addAbdomen() {
+    const geometry = new THREE.BoxGeometry(5, 5, 8);
+    const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    const abdomen = new THREE.Mesh(geometry, material);
+    abdomen.position.set(0, -5, 0);
+    this.body.add(abdomen);
+  }
+
+  _addWaist() {
+    const geometry = new THREE.BoxGeometry(6, 2, 9);
+    const material = new THREE.MeshBasicMaterial({ color: 0xafafaf });
+    const waist = new THREE.Mesh(geometry, material);
+    waist.position.set(-0.5, -8.5, 0);
+    this.body.add(waist);
+  }
+
+  _addWheels() {
+    const wheelGeometry = new THREE.CylinderGeometry(2, 2, 2, 32);
+    const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const wheelPositions = [
+      [2, -9, 5.5],
+      [2, -9, -5.5],
+    ];
+    wheelPositions.forEach((pos) => {
+      const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+      wheel.rotation.x = Math.PI / 2;
+      wheel.position.set(...pos);
+      this.body.add(wheel);
+    });
+  }
+
+  _addArms() {
+    const leftArm = new Arm(false);
+    leftArm.position.set(-3.5, 1, -4);
+    this.body.add(leftArm);
+    this.leftArm = leftArm;
+
+    const rightArm = new Arm(true);
+    rightArm.position.set(-3.5, 1, 12);
+    this.body.add(rightArm);
+    this.rightArm = rightArm;
+  }
+
+  _addHead() {
+    const head = new Head();
+    head.position.set(0.5, 4.5, 0);
+    this.body.add(head);
+    return head;
+  }
+
+  _addLegs() {
+    const leftLeg = new Leg();
+    leftLeg.position.set(0, -8, -0.5);
+    this.body.add(leftLeg);
+    this.leftLeg = leftLeg;
+
+    const rightLeg = new Leg(true);
+    rightLeg.position.set(0, -8, 4.5);
+    this.body.add(rightLeg);
+    this.rightLeg = rightLeg;
+  }
+
+  getHead() { return this.head; }
+  getLeftLeg() { return this.leftLeg; }
+  getRightLeg() { return this.rightLeg; }
+  getLegs() { return [this.leftLeg, this.rightLeg]; }
+  getLeftArm() { return this.leftArm; }
+  getRightArm() { return this.rightArm; }
+  update() {}
+}
+
+class Trailer extends THREE.Group {
+  constructor() {
+    super();
+    this._addBox();
+    this._addWheels();
+    this._addHitch();
+    this._addAxis();
+    this.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI);
+  }
+
+  _addBox() {
+    this.trailer = new THREE.Object3D();
+    this.trailerMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(36, 14, 14),
+      new THREE.MeshBasicMaterial({ color: 0xcccfcf})
+    );
+    this.trailer.add(this.trailerMesh);
+    this.add(this.trailer);
+  }
+
+  _addWheels() {
+    const wheelGeometry = new THREE.CylinderGeometry(2, 2, 2, 32);
+    const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const wheelPositions = [
+      [-8.5, -10, 5.5],
+      [-13.5, -10, 5.5],
+      [-8.5, -10, -5.5],
+      [-13.5, -10, -5.5],
+    ];
+    wheelPositions.forEach((pos) => {
+      const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+      wheel.rotation.x = Math.PI / 2;
+      wheel.position.set(...pos);
+      this.trailer.add(wheel);
+    });
+  }
+
+  _addHitch() {
+    const geometry = new THREE.BoxGeometry(3, 1, 1);
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const hitch = new THREE.Mesh(geometry, material);
+    hitch.position.set(17, -8, 0);
+    hitch.rotation.z = Math.PI / 2;
+    this.trailer.add(hitch);
+  }
+
+  _addAxis() {
+    const geometry = new THREE.BoxGeometry(10, 3, 9);
+    const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    const axis = new THREE.Mesh(geometry, material);
+    axis.position.set(-11, -8.5 , 0);
+    this._axis = axis;
+    this.trailer.add(axis);
+  }
+
+  moveForward(value) { this.getObject().translateZ(value); }
+  moveLeft(value) { this.getObject().translateX(value); }
+  updateX(x) { this.trailer.position.x += x; }
+  updateZ(z) { this.trailer.position.z += z; }
+}
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -39,12 +413,10 @@ function createScene() {
   scene = new THREE.Scene();
   scene.background = BACKGROUND;
 
-  // trailer
   trailer = new Trailer();
   trailer.position.set(10, 0, 0);
   scene.add(trailer);
 
-  // transformer
   body = new Body();
   body.position.set(-25, -1, 0);
   scene.add(body);
@@ -63,46 +435,38 @@ function createScene() {
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
-const positions = [[-40, 0, 0],     // frontal
-                   [0, 0, 30],      // lateral
-                   [-25, 30, 0],    // topo
-                   [-50, 20, 25]];  // perspetiva isométrica - projeção perspetiva
+function setupCameras() {
+  const positions = [
+    [-40, 0, 0],     // frontal
+    [0, 0, 30],      // lateral
+    [-25, 30, 0],    // topo
+    [-50, 20, 25]    // perspetiva isométrica
+  ];
 
-for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 4; i++) {
     if (i == 3) {
-        camera = new THREE.PerspectiveCamera(95, WIDTH / HEIGHT, 1, 1000);
+      camera = new THREE.PerspectiveCamera(95, WIDTH / HEIGHT, 1, 1000);
     } else {
-        camera = new THREE.OrthographicCamera(WIDTH / -20,
-                                        WIDTH / 20,
-                                        HEIGHT / 20,
-                                        HEIGHT / -20,
-                                        -50,
-                                        1000);
+      camera = new THREE.OrthographicCamera(
+        WIDTH / -20, WIDTH / 20,
+        HEIGHT / 20, HEIGHT / -20,
+        -50, 1000
+      );
     }
 
     camera.position.set(positions[i][0], positions[i][1], positions[i][2]);
     if(i == 2 || i == 3) {
-      camera.lookAt(-25, -1, 0); // Set camera look at position (x, y, z)
+      camera.lookAt(-25, -1, 0);
     }
     cameras.push(camera);
+  }
+  camera = cameras[0];
 }
 
 function setCamera(index) {
   if (index < 0 || index >= cameras.length) index = 0;
   camera = cameras[index];
 }
-camera = cameras[0];
-
-// TODO: remove this line
-let controls;
-
-/////////////////////
-/* CREATE LIGHT(S) */
-/////////////////////
-
-////////////////////////
-/* CREATE OBJECT3D(S) */
-////////////////////////
 
 //////////////////////
 /* CHECK COLLISIONS */
@@ -110,7 +474,6 @@ let controls;
 function checkCollisions() {
   if (trailer_box.intersectsBox(body_box)) {
     console.log("Collision Detected!");
-    // Handle the collision
     handleCollisions();
   }
 }
@@ -130,18 +493,10 @@ function handleCollisions() {
 ////////////
 function update() {
   if (!isAnimating) {
-    if (pressed_trailer_down) {
-      trailer.updateX(0.3);
-    }
-    if (pressed_trailer_up) {
-      trailer.updateX(-0.3);
-    }
-    if (pressed_trailer_left) {
-      trailer.updateZ(0.3);
-    }
-    if (pressed_trailer_right) {
-      trailer.updateZ(-0.3);
-    }
+    if (pressed_trailer_down) trailer.updateX(0.3);
+    if (pressed_trailer_up) trailer.updateX(-0.3);
+    if (pressed_trailer_left) trailer.updateZ(0.3);
+    if (pressed_trailer_right) trailer.updateZ(-0.3);
   } else {
     const elapsed = CLOCK.getElapsedTime() - animationStartTime;
     const t = Math.min(elapsed / animationDuration, 1);
@@ -178,45 +533,6 @@ function render() {
   renderer.render(scene, camera);
 }
 
-////////////////////////////////
-/* INITIALIZE ANIMATION CYCLE */
-////////////////////////////////
-function init() {
-  renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    //   alpha: true, // Enable transparency for the background // TODO: Check if it is transparent or not
-  });
-
-  renderer.setSize(WIDTH, HEIGHT); // TODO: Resize if window is resized
-  document.body.appendChild(renderer.domElement);
-
-  createScene();
-
-  // TODO: remove this part
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
-  controls.minDistance = 10;
-  controls.maxDistance = 200;
-  // controls.maxPolarAngle = Math.PI / 2; // 90 degrees
-  controls.minPolarAngle = 0; // top view
-
-  window.addEventListener("resize", onResize);
-  window.addEventListener("keydown", onKeyDown);
-  window.addEventListener("keyup", onKeyUp);
-}
-
-/////////////////////
-/* ANIMATION CYCLE */
-/////////////////////
-function animate() {
-  // TODO: remove after this line
-  controls.update(); // only required if controls.enableDamping = true, or autoRotate is true
-
-  update();
-  requestAnimationFrame(animate);
-  render();
-}
 
 ////////////////////////////
 /* RESIZE WINDOW CALLBACK */
@@ -234,117 +550,55 @@ function onResize() {
 /* KEY DOWN CALLBACK */
 ///////////////////////
 function onKeyDown(e) {
-
   switch (e.keyCode) {
-    // Frontal camera
-    case 49: // 1
-    case 97: // 1 (numpad)
-      setCamera(0);
+    // Camera controls
+    case 49: case 97: setCamera(0); break;  // 1
+    case 50: case 98: setCamera(1); break;  // 2
+    case 51: case 99: setCamera(2); break;  // 3
+    case 52: case 100: setCamera(3); break; // 4
+    
+    // Leg controls
+    case 119: case 87:  // W
+      body.getLegs().forEach(leg => leg.updateLeg(0.1));
+      break;
+    case 115: case 83:  // S
+      body.getLegs().forEach(leg => leg.updateLeg(-0.1));
       break;
     
-    // Lateral camera
-    case 50: // 2
-    case 98: // 2 (numpad)
-      setCamera(1);
-      break;
-
-    // Top camera
-    case 51: // 3
-    case 99: // 3 (numpad)
-      setCamera(2);
-      break;
-
-    // Prespective camera
-    case 52: // 4
-    case 100: // 4 (numpad)
-      setCamera(3);
-      break;
-
-    // To control the waist
-    case 119: // w
-    case 87: // W
-      body.getLegs().forEach(leg => {
-        leg.updateLeg(0.1);
-      });
-      break;
-
-    case 115: // s
-    case 83: // S
-      body.getLegs().forEach(leg => {
-        leg.updateLeg(-0.1);
-      });
-      break;
-
-    // TO control the feet
-    case 113: // q
-    case 81: // Q
+    // Feet controls
+    case 113: case 81:  // Q
       body.getLeftLeg().updateFeet(0.3);
       body.getRightLeg().updateFeet(0.3);
       break;
-
-    case 97: // a
-    case 65: // A
+    case 97: case 65:   // A
       body.getLeftLeg().updateFeet(-0.3);
       body.getRightLeg().updateFeet(-0.3);
       break;
     
-    // To control the arms
-    case 101: // e
-    case 69: // E
-      pressed_arm_left = true;
-      break;
-
-    case 100: // d
-    case 68: // D
-      pressed_arm_right = true;
-      break;
+    // Arm controls
+    case 101: case 69: pressed_arm_left = true; break;  // E
+    case 100: case 68: pressed_arm_right = true; break; // D
     
-    // To control the head
-    case 82: // 'R'
-    case 114: // 'r'
-        body.getHead().update(0.3);
-        break;
+    // Head controls
+    case 82: case 114: body.getHead().update(0.3); break;  // R
+    case 102: case 70: body.getHead().update(-0.3); break; // F
     
-    case 102: // f
-    case 70: // F
-        body.getHead().update(-0.3);
-        break;
+    // Trailer controls
+    case 38: pressed_trailer_up = true; break;    // up
+    case 40: pressed_trailer_down = true; break;  // down
+    case 37: pressed_trailer_left = true; break;  // left
+    case 39: pressed_trailer_right = true; break; // right
     
-    
-    // To control the trailer
-    case 38: // up
-      pressed_trailer_up = true;
-      break;
-      
-    case 40: // down
-      pressed_trailer_down = true;
-      break;
-    
-    case 37: // left
-      pressed_trailer_left = true;
-      break;
-    
-    case 39: // right
-      pressed_trailer_right = true;
-      break;
-    
-    
-    case 55: // 7
-    case 103: // 7 (numpad)
-      if (pressed_wireframe) {
-        break;
+    // Wireframe toggle
+    case 55: case 103:  // 7
+      if (!pressed_wireframe) {
+        scene.traverse(node => {
+          if (node instanceof THREE.Mesh) {
+            node.material.wireframe = !node.material.wireframe;
+          }
+        });
+        pressed_wireframe = true;
       }
-
-      scene.traverse(function (node) {
-        if (node instanceof THREE.Mesh) {
-          node.material.wireframe = !node.material.wireframe;
-          pressed_wireframe = true;
-        }
-      });
-      break;
-    default:
-      // TODO: Remove this line
-      console.log("tecla: ", e.keyCode);
       break;
   }
 }
@@ -354,71 +608,61 @@ function onKeyDown(e) {
 ///////////////////////
 function onKeyUp(e) {
   switch (e.keyCode) {
-    case 55: // 7
-      pressed_wireframe = false;
-      break;
+    // Leg controls
+    // TODO: add leg controls
     
-    // To control the waist
-    case 119: // w
-    case 87: // W
-
-      break;
-
-    case 115: // s
-    case 83: // S
-      
-      break;
-
-    // TO control the feet
-    case 113: // q
-    case 81: // Q
-
-      break;
-
-    case 97: // a
-    case 65: // A
-
-      break;
+    // Feet controls
+    // TODO; add feet controls
     
-    // To control the arms
-    case 101: // e
-    case 69: // E
-      pressed_arm_left = false;
-      break;
-
-    case 100: // d
-    case 68: // D
-      pressed_arm_right = false;
-      break;
+    // Arm controls
+    case 101: case 69: pressed_arm_left = false; break;  // E
+    case 100: case 68: pressed_arm_right = false; break; // D
     
-    // To control the head
-    case 82: // 'R'
-    case 114: // 'r'
-
-        break;
+    // Head controls
+    // TODO: add head controls
     
-    case 102: // f
-    case 70: // F
-
-      break;
+    // Trailer controls
+    case 38: pressed_trailer_up = false; break;    // up
+    case 40: pressed_trailer_down = false; break;  // down
+    case 37: pressed_trailer_left = false; break;  // left
+    case 39: pressed_trailer_right = false; break; // right
     
-    // To control the trailer
-    case 38: // up
-      pressed_trailer_up = false;
-      break;
-      
-    case 40: // down
-      pressed_trailer_down = false;
-      break;
-    
-    case 37: // left
-      pressed_trailer_left = false;
-      break;
-    
-    case 39: // right
-      pressed_trailer_right = false;
-      break;
+    // Wireframe toggle
+    case 55: case 103: pressed_wireframe = false; break; // 7
   }
+}
+
+////////////////////////////////
+/* INITIALIZE ANIMATION CYCLE */
+////////////////////////////////
+function init() {
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(WIDTH, HEIGHT);
+  document.body.appendChild(renderer.domElement);
+
+  createScene();
+  setupCameras();
+
+  // OrbitControls for debugging REMOVE (?)
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.minDistance = 10;
+  controls.maxDistance = 200;
+  controls.minPolarAngle = 0;
+
+  window.addEventListener("resize", onResize);
+  window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("keyup", onKeyUp);
+}
+
+/////////////////////
+/* ANIMATION CYCLE */
+/////////////////////
+function animate() {
+  update();
+  requestAnimationFrame(animate);
+  render();
 }
 
 init();

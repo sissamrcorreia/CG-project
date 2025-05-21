@@ -443,12 +443,6 @@ function createScene() {
   // AABB boxes
   trailer_box = new THREE.Box3().setFromObject(trailer);
   body_box = new THREE.Box3().setFromObject(body);
-
-  // TODO: remove this
-  const trailerBoxHelper = new THREE.Box3Helper(trailer_box, 0xff0000);
-  const bodyBoxHelper = new THREE.Box3Helper(body_box, 0x00ff00);
-  scene.add(trailerBoxHelper);
-  scene.add(bodyBoxHelper);
 }
 
 
@@ -701,14 +695,6 @@ function init() {
 
   createScene();
   setupCameras();
-
-  // OrbitControls for debugging REMOVE (?)
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
-  controls.minDistance = 10;
-  controls.maxDistance = 200;
-  controls.minPolarAngle = 0;
 
   window.addEventListener("resize", onResize);
   window.addEventListener("keydown", onKeyDown);

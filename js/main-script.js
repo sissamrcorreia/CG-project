@@ -86,7 +86,7 @@ class Arm extends THREE.Group {
   }
 
   _addJunction() {
-    const geometry = new THREE.BoxGeometry(1, 2, 5);
+    const geometry = new THREE.BoxGeometry(1, 2, 3);
     const material = new THREE.MeshBasicMaterial({ color: 0xafafaf });
     const junction = new THREE.Mesh(geometry, material);
 
@@ -404,7 +404,7 @@ class Trailer extends THREE.Group {
     const geometry = new THREE.BoxGeometry(3, 1, 1);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const hitch = new THREE.Mesh(geometry, material);
-    hitch.position.set(17, -8, 0);
+    hitch.position.set(17, -8.5, 0);
     hitch.rotation.z = Math.PI / 2;
     this.trailer.add(hitch);
   }

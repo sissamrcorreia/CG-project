@@ -154,10 +154,11 @@ class Head extends THREE.Group {
 
   _addAntennas() {
     const geometry = new THREE.BoxGeometry(1, 3, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0xafafaf });
+    const materialL = new THREE.MeshBasicMaterial({ color: 0xafafaf });
+    const materialR = new THREE.MeshBasicMaterial({ color: 0xafafaf });
 
-    const leftAntenna = new THREE.Mesh(geometry, material);
-    const rightAntenna = new THREE.Mesh(geometry, material);
+    const leftAntenna = new THREE.Mesh(geometry, materialL);
+    const rightAntenna = new THREE.Mesh(geometry, materialR);
 
     leftAntenna.position.set(0, 1.5, -3);
     rightAntenna.position.set(0, 1.5, 3);
@@ -169,7 +170,7 @@ class Head extends THREE.Group {
   }
 
   update(value) {
-    const min = -3*Math.PI / 2;
+    const min = -2*Math.PI / 2;
     const max = 0;
     const angle = this.head.rotation.z + value;
     const newAngle = Math.min(Math.max(angle, min), max);
@@ -208,20 +209,20 @@ class Leg extends THREE.Group {
 
   _addWheels() {
     const wheelGeometry = new THREE.CylinderGeometry(2, 2, 2, 32);
-    const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
     let wheelPositions = [
-      [-0.5, -7.5, -4.7],
-      [-0.5, -12, -4.7],
+      [-1, -7.5, -4.7],
+      [-1, -12, -4.7],
     ];
 
     if(this.right) {
       wheelPositions = [
-        [-0.5, -7.5, 0.7],
-        [-0.5, -12, 0.7],
+        [-1, -7.5, 0.7],
+        [-1, -12, 0.7],
       ];
     }
 
     wheelPositions.forEach((pos) => {
+      const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: false });
       const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
       wheel.rotation.x = Math.PI / 2;
       wheel.position.set(...pos);
@@ -310,12 +311,13 @@ class Body extends THREE.Group {
 
   _addWheels() {
     const wheelGeometry = new THREE.CylinderGeometry(2, 2, 2, 32);
-    const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const wheelPositions = [
       [2, -9, 5.5],
       [2, -9, -5.5],
     ];
+
     wheelPositions.forEach((pos) => {
+      const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
       const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
       wheel.rotation.x = Math.PI / 2;
       wheel.position.set(...pos);
@@ -385,14 +387,15 @@ class Trailer extends THREE.Group {
 
   _addWheels() {
     const wheelGeometry = new THREE.CylinderGeometry(2, 2, 2, 32);
-    const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const wheelPositions = [
       [-8.5, -10, 5.5],
       [-13.5, -10, 5.5],
       [-8.5, -10, -5.5],
       [-13.5, -10, -5.5],
     ];
+
     wheelPositions.forEach((pos) => {
+      const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
       const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
       wheel.rotation.x = Math.PI / 2;
       wheel.position.set(...pos);
@@ -472,6 +475,9 @@ function setupCameras() {
     if(i == 2 || i == 3) {
       camera.lookAt(-25, -1, 0);
     }
+    if(i == 0) {
+      camera.lookAt(0, 0, 0);
+    }
     cameras.push(camera);
   }
   camera = cameras[0];
@@ -488,7 +494,7 @@ function setCamera(index) {
 //////////////////////
 function checkCollisions() {
   if (trailer_box.intersectsBox(body_box)) {
-    console.log("Collision Detected!");
+    console.log("Collision Detected!"); // REMOVE THIS
     handleCollisions();
   }
 }
@@ -506,9 +512,7 @@ function handleCollisions() {
 
 function toggleWireframe() {
   scene.traverse(node => {
-    if (node instanceof THREE.Mesh) {
-      node.material.wireframe = !node.material.wireframe;
-    }
+    if (node instanceof THREE.Mesh) node.material.wireframe = !node.material.wireframe;
   });
 }
 
@@ -566,18 +570,14 @@ function update() {
   }
 
   // Handle head movement
-  if(pressed.head_up) {
-    body.getHead().update(0.3);
-  }
-  if(pressed.head_down) {
-    body.getHead().update(-0.3);
-  }
+  if(pressed.head_up) body.getHead().update(0.3);
+  if(pressed.head_down) body.getHead().update(-0.3);
 
   // Handle camera changes
-  if(pressed.camera_1) { setCamera(0); pressed.camera_1 = false; }
-  if(pressed.camera_2) { setCamera(1); pressed.camera_2 = false; }
-  if(pressed.camera_3) { setCamera(2); pressed.camera_3 = false; }
-  if(pressed.camera_4) { setCamera(3); pressed.camera_4 = false; }
+  if(pressed.camera_1) setCamera(0); pressed.camera_1 = false;
+  if(pressed.camera_2) setCamera(1); pressed.camera_2 = false;
+  if(pressed.camera_3) setCamera(2); pressed.camera_3 = false;
+  if(pressed.camera_4) setCamera(3); pressed.camera_4 = false;
 
   // Update collision boxes
   trailer_box.setFromObject(trailer);
@@ -590,9 +590,7 @@ function update() {
 /////////////
 /* DISPLAY */
 /////////////
-function render() {
-  renderer.render(scene, camera);
-}
+function render() { renderer.render(scene, camera); }
 
 
 ////////////////////////////

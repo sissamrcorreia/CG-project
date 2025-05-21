@@ -10,7 +10,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 const HEIGHT = window.innerHeight;
 const WIDTH = window.innerWidth;
 const CLOCK = new THREE.Clock();
-const BACKGROUND = new THREE.Color(0xd5edf5);
+const BACKGROUND = new THREE.Color(0xfff0f5);
 
 // Input flags
 let pressed = { wireframe: false, trailer_up: false, trailer_down: false,
@@ -51,7 +51,7 @@ class Arm extends THREE.Group {
     this.add(this.arm);
 
     const geometry = new THREE.BoxGeometry(2, 5, 2);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const material = new THREE.MeshBasicMaterial({ color: 0xe32636 });
     const upperArm = new THREE.Mesh(geometry, material);
     this.arm.add(upperArm);
   }
@@ -85,6 +85,8 @@ class Arm extends THREE.Group {
     lowerArm.position.set(-1, -3.5, 0);
     this.arm.add(lowerArm);
   }
+
+  getArm() { return this.arm; }
 
   update(z) {
     const minZ = this.right ? -7 : -4;
@@ -186,6 +188,9 @@ class Head extends THREE.Group {
     this.pivot.position.z += pivotOffsetZ;
   }
 
+  getHead() { return this.headGroup; }
+  getPivot() { return this.pivot; }
+
   update(value) {
     const min = (-2 * Math.PI) / 2;
     const max = 0;
@@ -264,6 +269,9 @@ class Leg extends THREE.Group {
     this.footPivot = footPivot;
   }
 
+  getLeg() { return this.leg; }
+  getFoot() { return this.footPivot; }
+
   updateFeet(value) {
     const min = Math.PI / 2;
     const max = 0;
@@ -299,7 +307,7 @@ class Body extends THREE.Group {
     this.add(this.body);
 
     const geometry = new THREE.BoxGeometry(3, 5, 12);
-    const material = new THREE.MeshBasicMaterial({ color: 0xed2424 });
+    const material = new THREE.MeshBasicMaterial({ color: 0xff2a3d });
     const chest = new THREE.Mesh(geometry, material);
     chest.position.set(-1, 0, 0);
     this.body.add(chest);
@@ -307,7 +315,7 @@ class Body extends THREE.Group {
 
   _addBack() {
     const geometry = new THREE.BoxGeometry(2, 5, 8);
-    const material = new THREE.MeshBasicMaterial({ color: 0xed2424 });
+    const material = new THREE.MeshBasicMaterial({ color: 0xff2a3d });
     const back = new THREE.Mesh(geometry, material);
     back.position.set(1.5, 0, 0);
     this.body.add(back);
@@ -376,6 +384,26 @@ class Body extends THREE.Group {
     this.rightLeg = rightLeg;
   }
 
+  isTruck() { 
+      console.log(
+        "Head pivot rotation.z:", this.getHead().getPivot().rotation.z == -2 * Math.PI / 2, "\n",
+        "Left arm position.z:", this.getLeftArm().getArm().position.z == -1, "\n",
+        "Right arm position.z:", this.getRightArm().getArm().position.z == -7, "\n",
+        "Left leg rotation.z:", this.getLeftLeg().getLeg().rotation.z == Math.PI / 2, "\n",
+        "Right leg rotation.z:", this.getRightLeg().getLeg().rotation.z == Math.PI / 2, "\n",
+        "Left leg foot rotation.z:", this.getLeftLeg().getFoot().rotation.z == Math.PI / 2, "\n",
+        "Right leg foot rotation.z:", this.getRightLeg().getFoot().rotation.z == Math.PI / 2, "\n"
+      );
+
+      return this.getHead().getPivot().rotation.z == -2 * Math.PI / 2 &&
+      this.getLeftArm().getArm().position.z == -1 &&
+      this.getRightArm().getArm().position.z == -7 &&
+      this.getLeftLeg().getLeg().rotation.z == Math.PI / 2 &&
+      this.getRightLeg().getLeg().rotation.z == Math.PI / 2 &&
+      this.getLeftLeg().getFoot().rotation.z == Math.PI / 2 &&
+      this.getRightLeg().getFoot().rotation.z == Math.PI / 2;
+   }
+
   getHead() { return this.head; }
   getLeftLeg() { return this.leftLeg; }
   getRightLeg() { return this.rightLeg; }
@@ -425,7 +453,7 @@ class Trailer extends THREE.Group {
 
   _addHitch() {
     const geometry = new THREE.BoxGeometry(3, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const material = new THREE.MeshBasicMaterial({ color: 0xe32636 });
     const hitch = new THREE.Mesh(geometry, material);
     hitch.position.set(17, -8.5, 0);
     hitch.rotation.z = Math.PI / 2;
@@ -533,6 +561,7 @@ function toggleWireframe() {
 /* UPDATE */
 ////////////
 function update() {
+  body.isTruck();
   if (!isAnimating) {
     // Handle trailer movement
     if (pressed.trailer_down) trailer.updateX(0.3);
@@ -629,20 +658,20 @@ function onKeyDown(e) {
     case 52: case 100: pressed.camera_4 = true; break; // 4
     
     // Leg controls
-    case 119: case 87: pressed.legs_up = true; break;    // W
-    case 115: case 83: pressed.legs_down = true; break;  // S
+    case 119: case 87: pressed.legs_up = true; break;    // w W
+    case 115: case 83: pressed.legs_down = true; break;  // s S
     
     // Feet controls
-    case 113: case 81: pressed.feet_up = true; break;    // Q
-    case 97: case 65:  pressed.feet_down = true; break;  // A
+    case 113: case 81: pressed.feet_up = true; break;    // q Q
+    case 97: case 65:  pressed.feet_down = true; break;  // a A
     
     // Arm controls
-    case 101: case 69: pressed.arm_left = true; break;   // E
-    case 100: case 68: pressed.arm_right = true; break;  // D
+    case 101: case 69: pressed.arm_left = true; break;   // e E
+    case 100: case 68: pressed.arm_right = true; break;  // d D
     
     // Head controls
-    case 82: case 114: pressed.head_up = true; break;    // R
-    case 102: case 70: pressed.head_down = true; break;  // F
+    case 82: case 114: pressed.head_up = true; break;    // r R
+    case 102: case 70: pressed.head_down = true; break;  // f F
     
     // Trailer controls
     case 38: pressed.trailer_up = true; break;    // up
@@ -666,20 +695,20 @@ function onKeyDown(e) {
 function onKeyUp(e) {
   switch (e.keyCode) {
     // Leg controls
-    case 119: case 87: pressed.legs_up = false; break;    // W
-    case 115: case 83: pressed.legs_down = false; break;  // S
+    case 119: case 87: pressed.legs_up = false; break;    // w W
+    case 115: case 83: pressed.legs_down = false; break;  // s S
     
     // Feet controls
-    case 113: case 81: pressed.feet_up = false; break;    // Q
-    case 97: case 65:  pressed.feet_down = false; break;  // A
+    case 113: case 81: pressed.feet_up = false; break;    // q Q
+    case 97: case 65:  pressed.feet_down = false; break;  // a A
     
     // Arm controls
-    case 101: case 69: pressed.arm_left = false; break;   // E
-    case 100: case 68: pressed.arm_right = false; break;  // D
+    case 101: case 69: pressed.arm_left = false; break;   // e E
+    case 100: case 68: pressed.arm_right = false; break;  // d D
     
     // Head controls
-    case 82: case 114: pressed.head_up = false; break;    // R
-    case 102: case 70: pressed.head_down = false; break;  // F
+    case 82: case 114: pressed.head_up = false; break;    // r R
+    case 102: case 70: pressed.head_down = false; break;  // f F
     
     // Trailer controls
     case 38: pressed.trailer_up = false; break;    // up

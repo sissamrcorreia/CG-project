@@ -101,22 +101,31 @@ class Head extends THREE.Group {
     this._addHead();
     this._addEyes();
     this._addAntennas();
+    this._setupHeadRotationPivot();
   }
 
   _addHead() {
-    this.head = new THREE.Object3D();
-    this.add(this.head);
+    // Create a container for the head
+    this.headGroup = new THREE.Object3D();
+    this.add(this.headGroup);
 
     const geometry = new THREE.BoxGeometry(4, 4, 5);
-    const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-    const head = new THREE.Mesh(geometry, material);
-    head.position.set(0, 0, 0);
-    this.head.add(head);
+    const material = new THREE.MeshBasicMaterial({ 
+      color: 0x0000ff,
+      wireframe: false
+    });
+    
+    this.headMesh = new THREE.Mesh(geometry, material);
+    this.headMesh.position.set(0, 0, 0);
+    this.headGroup.add(this.headMesh);
   }
 
   _addEyes() {
     const geometry = new THREE.BoxGeometry(0.5, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0xefefef });
+    const material = new THREE.MeshBasicMaterial({ 
+      color: 0xefefef,
+      wireframe: false
+    });
 
     const leftEye = new THREE.Mesh(geometry, material);
     const rightEye = new THREE.Mesh(geometry, material);
@@ -127,13 +136,19 @@ class Head extends THREE.Group {
     const eyes = new THREE.Object3D();
     eyes.add(leftEye);
     eyes.add(rightEye);
-    this.head.add(eyes);
+    this.headGroup.add(eyes);
   }
 
   _addAntennas() {
     const geometry = new THREE.BoxGeometry(1, 3, 1);
-    const materialL = new THREE.MeshBasicMaterial({ color: 0xafafaf });
-    const materialR = new THREE.MeshBasicMaterial({ color: 0xafafaf });
+    const materialL = new THREE.MeshBasicMaterial({ 
+      color: 0xafafaf,
+      wireframe: false
+    });
+    const materialR = new THREE.MeshBasicMaterial({ 
+      color: 0xafafaf,
+      wireframe: false
+    });
 
     const leftAntenna = new THREE.Mesh(geometry, materialL);
     const rightAntenna = new THREE.Mesh(geometry, materialR);
@@ -144,15 +159,39 @@ class Head extends THREE.Group {
     const antennas = new THREE.Object3D();
     antennas.add(leftAntenna);
     antennas.add(rightAntenna);
-    this.head.add(antennas);
+    this.headGroup.add(antennas);
+  }
+  
+  _setupHeadRotationPivot() {
+    const originalPosition = this.headGroup.position.clone();
+    
+    // Create a pivot point at the lower right corner of the head box
+    const pivotOffsetX = 2;
+    const pivotOffsetY = -2;
+    const pivotOffsetZ = 2.5;
+    
+    this.remove(this.headGroup);
+    
+    this.pivot = new THREE.Object3D();
+    this.add(this.pivot);
+    this.pivot.add(this.headGroup);
+    
+    // Position the head so its lower right corner is at the pivot's origin
+    this.headGroup.position.set(-pivotOffsetX, -pivotOffsetY, -pivotOffsetZ);
+  
+    this.pivot.position.copy(originalPosition);
+    
+    this.pivot.position.x += pivotOffsetX;
+    this.pivot.position.y += pivotOffsetY;
+    this.pivot.position.z += pivotOffsetZ;
   }
 
   update(value) {
     const min = (-2 * Math.PI) / 2;
     const max = 0;
-    const angle = this.head.rotation.z + value;
+    const angle = this.pivot.rotation.z + value;
     const newAngle = Math.min(Math.max(angle, min), max);
-    this.head.rotation.z = newAngle;
+    this.pivot.rotation.z = newAngle;
   }
 }
 
@@ -471,10 +510,7 @@ function setCamera(index) {
 /* CHECK COLLISIONS */
 //////////////////////
 function checkCollisions() {
-  if (trailer_box.intersectsBox(body_box)) {
-    console.log("Collision Detected!"); // REMOVE THIS
-    handleCollisions();
-  }
+  if (trailer_box.intersectsBox(body_box)) handleCollisions();
 }
 
 ///////////////////////

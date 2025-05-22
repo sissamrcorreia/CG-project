@@ -385,16 +385,6 @@ class Body extends THREE.Group {
   }
 
   isTruck() { 
-      console.log(
-        "Head pivot rotation.z:", this.getHead().getPivot().rotation.z == -2 * Math.PI / 2, "\n",
-        "Left arm position.z:", this.getLeftArm().getArm().position.z == -1, "\n",
-        "Right arm position.z:", this.getRightArm().getArm().position.z == -7, "\n",
-        "Left leg rotation.z:", this.getLeftLeg().getLeg().rotation.z == Math.PI / 2, "\n",
-        "Right leg rotation.z:", this.getRightLeg().getLeg().rotation.z == Math.PI / 2, "\n",
-        "Left leg foot rotation.z:", this.getLeftLeg().getFoot().rotation.z == Math.PI / 2, "\n",
-        "Right leg foot rotation.z:", this.getRightLeg().getFoot().rotation.z == Math.PI / 2, "\n"
-      );
-
       return this.getHead().getPivot().rotation.z == -2 * Math.PI / 2 &&
       this.getLeftArm().getArm().position.z == -1 &&
       this.getRightArm().getArm().position.z == -7 &&
@@ -561,7 +551,8 @@ function toggleWireframe() {
 /* UPDATE */
 ////////////
 function update() {
-  body.isTruck();
+  if(body.isTruck()) {
+  }
   if (!isAnimating) {
     // Handle trailer movement
     if (pressed.trailer_down) trailer.updateX(0.3);

@@ -559,7 +559,7 @@ function update() {
     // TODO: complete movements ifs
     
     // Handle trailer movement
-    
+
     if (pressed.trailer_up) {
       trailer.updateX(-0.3)
       moved = true;
@@ -582,6 +582,8 @@ function update() {
       trailer.updateX(0.3)
       moved = true;
     }
+
+    if(moved) isColliding = false; // TODO: check if it is needed
 
   } else {
     trailer.getBox().material.color.setHex(0xffffff);

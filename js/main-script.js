@@ -1,8 +1,4 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-// import { VRButton } from "three/addons/webxr/VRButton.js";
-// import * as Stats from "three/addons/libs/stats.module.js";
-// import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
 //////////////////////
 /* GLOBAL VARIABLES */
@@ -15,15 +11,15 @@ const BACKGROUND = new THREE.Color(0xfff0f5);
 // Input flags
 let pressed = { wireframe: false, trailer_up: false, trailer_down: false,
   trailer_left: false, trailer_right: false, arm_left: false, arm_right: false,
-  legs_up: false, legs_down: false, feet_up: false, feet_down: false, 
-  head_up: false, head_down: false, camera_1: false, camera_2: false, 
+  legs_up: false, legs_down: false, feet_up: false, feet_down: false,
+  head_up: false, head_down: false, camera_1: false, camera_2: false,
   camera_3: false, camera_4: false,
 };
 
-let isAnimating = false;
+const animationDuration = 1.5;
 let animationStartTime = 0;
-const animationDuration = 2;
-const connectionPoint = new THREE.Vector3(0, 0, 0);
+let isAnimating = false;
+let isColliding = false;
 
 let body, trailer;
 let body_box, trailer_box;
@@ -124,7 +120,7 @@ class Head extends THREE.Group {
 
   _addEyes() {
     const geometry = new THREE.BoxGeometry(0.5, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ 
+    const material = new THREE.MeshBasicMaterial({
       color: 0xefefef,
       wireframe: false
     });
@@ -143,11 +139,11 @@ class Head extends THREE.Group {
 
   _addAntennas() {
     const geometry = new THREE.BoxGeometry(1, 3, 1);
-    const materialL = new THREE.MeshBasicMaterial({ 
+    const materialL = new THREE.MeshBasicMaterial({
       color: 0xafafaf,
       wireframe: false
     });
-    const materialR = new THREE.MeshBasicMaterial({ 
+    const materialR = new THREE.MeshBasicMaterial({
       color: 0xafafaf,
       wireframe: false
     });
@@ -459,6 +455,9 @@ class Trailer extends THREE.Group {
     this.trailer.add(axis);
   }
 
+  getObject() { return this.trailer; }
+  getBox() { return this.trailerMesh; }
+
   moveForward(value) { this.getObject().translateZ(value); }
   moveLeft(value) { this.getObject().translateX(value); }
   
@@ -474,7 +473,7 @@ function createScene() {
   scene.background = BACKGROUND;
 
   trailer = new Trailer();
-  trailer.position.set(10, 0, 0);
+  trailer.position.set(20, 0, 0);
   scene.add(trailer);
 
   body = new Body();
@@ -529,16 +528,19 @@ function setCamera(index) {
 //////////////////////
 function checkCollisions() {
   if (trailer_box.intersectsBox(body_box)) handleCollisions();
+  else animationStartTime = 0;
 }
 
 ///////////////////////
 /* HANDLE COLLISIONS */
 ///////////////////////
 function handleCollisions() {
-  if (!isAnimating) {
+  if (!isAnimating && animationStartTime === 0 && body.isTruck()) {
     isAnimating = true;
     animationStartTime = CLOCK.getElapsedTime();
   }
+
+  isColliding = true;
 }
 
 function toggleWireframe() {
@@ -551,25 +553,40 @@ function toggleWireframe() {
 /* UPDATE */
 ////////////
 function update() {
-  if(body.isTruck()) {
-  }
   if (!isAnimating) {
+    trailer.getBox().material.color.setHex(0xcccfcf);
     // Handle trailer movement
-    if (pressed.trailer_down) trailer.updateX(0.3);
+    if(isColliding) {
+      if(pressed.trailer_up) isColliding = false;
+      if(pressed.trailer_left && !body.isTruck())  trailer.updateZ(0.3), isColliding = false;
+      if(pressed.trailer_right && !body.isTruck()) trailer.updateZ(-0.3), isColliding = false;
+    } else {
+      if(pressed.trailer_left)  trailer.updateZ(0.3)
+      if(pressed.trailer_right) trailer.updateZ(-0.3)
+      if (pressed.trailer_down) trailer.updateX(0.3);
+    }
+
     if (pressed.trailer_up) trailer.updateX(-0.3);
-    if (pressed.trailer_left) trailer.updateZ(0.3);
-    if (pressed.trailer_right) trailer.updateZ(-0.3);
   } else {
-    const elapsed = CLOCK.getElapsedTime() - animationStartTime;
-    const t = Math.min(elapsed / animationDuration, 1);
+    trailer.getBox().material.color.setHex(0xffffff);
+    const finalPosition = new THREE.Vector3(20, 0, 0);
+    const trailerObject = trailer.getObject();
+    const delta = CLOCK.getDelta();
+    const position = trailerObject.position.clone();
+    const distance = position.distanceTo(finalPosition);
+    
+    // Debug logging
+    console.log('Trailer current position:', position.x, position.y, position.z);
+    console.log('Target absolute position:', finalPosition.x, finalPosition.y, finalPosition.z);
 
-    const startPosition = trailer.position.clone();
-    trailer.position.lerpVectors(startPosition, connectionPoint, t);
-
-    if (t >= 1) {
-      isAnimating = false;
-      animationStartTime = 0;
-      trailer.position.copy(connectionPoint);
+    if (distance < 0.2) {
+        trailerObject.position.copy(finalPosition); // Sets absolute position
+        isAnimating = false;
+        console.log('Animation complete - trailer at absolute position:', trailerObject.position);
+    } else {
+        const displacement = finalPosition.clone().sub(position);
+        displacement.normalize().multiplyScalar(delta * 10);
+        trailerObject.position.add(displacement);
     }
   }
 
@@ -661,8 +678,8 @@ function onKeyDown(e) {
     case 100: case 68: pressed.arm_right = true; break;  // d D
     
     // Head controls
-    case 82: case 114: pressed.head_up = true; break;    // r R
-    case 102: case 70: pressed.head_down = true; break;  // f F
+    case 82: case 114: pressed.head_down = true; break;    // r R
+    case 102: case 70: pressed.head_up = true; break;  // f F
     
     // Trailer controls
     case 38: pressed.trailer_up = true; break;    // up
@@ -698,8 +715,8 @@ function onKeyUp(e) {
     case 100: case 68: pressed.arm_right = false; break;  // d D
     
     // Head controls
-    case 82: case 114: pressed.head_up = false; break;    // r R
-    case 102: case 70: pressed.head_down = false; break;  // f F
+    case 82: case 114: pressed.head_down = false; break;    // r R
+    case 102: case 70: pressed.head_up = false; break;  // f F
     
     // Trailer controls
     case 38: pressed.trailer_up = false; break;    // up

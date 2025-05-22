@@ -535,7 +535,7 @@ function checkCollisions() {
 /* HANDLE COLLISIONS */
 ///////////////////////
 function handleCollisions() {
-  if (!isAnimating && animationStartTime === 0 && body.isTruck()) {
+  if (!isAnimating && animationStartTime === 0 && body.isTruck() && trailer.getObject().position.x < 13) {
     isAnimating = true;
     animationStartTime = CLOCK.getElapsedTime();
   }
@@ -555,38 +555,64 @@ function toggleWireframe() {
 function update() {
   if (!isAnimating) {
     trailer.getBox().material.color.setHex(0xcccfcf);
+    let moved = false;
+    // TODO: complete movements ifs
+    
     // Handle trailer movement
-    if(isColliding) {
-      if(pressed.trailer_up) isColliding = false;
-      if(pressed.trailer_left && !body.isTruck())  trailer.updateZ(0.3), isColliding = false;
-      if(pressed.trailer_right && !body.isTruck()) trailer.updateZ(-0.3), isColliding = false;
-    } else {
-      if(pressed.trailer_left)  trailer.updateZ(0.3)
-      if(pressed.trailer_right) trailer.updateZ(-0.3)
-      if (pressed.trailer_down) trailer.updateX(0.3);
+    
+    if (pressed.trailer_up) {
+      trailer.updateX(-0.3)
+      moved = true;
     }
 
-    if (pressed.trailer_up) trailer.updateX(-0.3);
+    if (pressed.trailer_left) {
+      if(isColliding && body.isTruck()) return;
+      trailer.updateZ(0.3)
+      moved = true;
+    }
+
+    if (pressed.trailer_right) {
+      if(isColliding && body.isTruck()) return;
+      trailer.updateZ(-0.3)
+      moved = true;
+    }
+     
+    if (pressed.trailer_down) {
+      if(isColliding && body.isTruck()) return;
+      trailer.updateX(0.3)
+      moved = true;
+    }
+
   } else {
     trailer.getBox().material.color.setHex(0xffffff);
-    const finalPosition = new THREE.Vector3(20, 0, 0);
     const trailerObject = trailer.getObject();
     const delta = CLOCK.getDelta();
-    const position = trailerObject.position.clone();
-    const distance = position.distanceTo(finalPosition);
-    
-    // Debug logging
-    console.log('Trailer current position:', position.x, position.y, position.z);
-    console.log('Target absolute position:', finalPosition.x, finalPosition.y, finalPosition.z);
 
-    if (distance < 0.2) {
-        trailerObject.position.copy(finalPosition); // Sets absolute position
-        isAnimating = false;
-        console.log('Animation complete - trailer at absolute position:', trailerObject.position);
+    // First, move Z to 0 (center), then move X to 20
+    const currentPos = trailerObject.position.clone();
+    const targetZ = 0;
+    const targetX = 20;
+
+    if (Math.abs(currentPos.z - targetZ) > 0.2) {
+      // Move Z towards 0
+      const direction = targetZ - currentPos.z > 0 ? 1 : -1;
+      trailerObject.position.z += direction * delta * 10;
+      // Clamp to target
+      if (Math.abs(trailerObject.position.z - targetZ) < 0.2) {
+        trailerObject.position.z = targetZ;
+      }
+    } else if (Math.abs(currentPos.x - targetX) > 0.2) {
+      // Move X towards 20
+      const direction = targetX - currentPos.x > 0 ? 1 : -1;
+      trailerObject.position.x += direction * delta * 10;
+      // Clamp to target
+      if (Math.abs(trailerObject.position.x - targetX) < 0.2) {
+        trailerObject.position.x = targetX;
+      }
     } else {
-        const displacement = finalPosition.clone().sub(position);
-        displacement.normalize().multiplyScalar(delta * 10);
-        trailerObject.position.add(displacement);
+      // Animation complete
+      trailerObject.position.set(targetX, currentPos.y, targetZ);
+      isAnimating = false;
     }
   }
 

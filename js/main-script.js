@@ -110,7 +110,6 @@ class Head extends THREE.Group {
   }
 
   _addHead() {
-    // Create a container for the head
     this.headGroup = new THREE.Object3D();
     this.add(this.headGroup);
 
@@ -496,11 +495,12 @@ function createScene() {
 /* CREATE CAMERA(S) */
 //////////////////////
 function setupCameras() {
+  // Camera positions: [x, y, z]
   const positions = [
-    [-40, 0, 0], // frontal
-    [0, 0, 30], // lateral
-    [-25, 30, 0], // topo
-    [-50, 20, 25], // perspetiva
+    [-40, 0, 0], // front
+    [0, 0, 30], // side
+    [-25, 30, 0], // top
+    [-50, 20, 25], // perspective
   ];
 
   for (let i = 0; i < 4; i++) {
@@ -563,7 +563,7 @@ function checkCollisions() {
 /* HANDLE COLLISIONS */
 ///////////////////////
 function handleCollisions() {
-  if (!isAnimating && animationStartTime === 0 && body.isTruck() && trailer.getObject().position.x < 13) {
+  if (!isAnimating && animationStartTime === 0 && body.isTruck() && trailer.getObject().position.x < 13 && !isConnected) {
     isAnimating = true;
     animationStartTime = CLOCK.getElapsedTime();
   }
@@ -585,9 +585,9 @@ function update() {
     trailer.getBox().material.color.setHex(0xcccfcf);
     let moved = false;
 
-    // MODO CAMIÃO
+    // TRUCK MODE
     if (body.isTruck()) {
-      // 1) Após colisão de trás ou conectado: apenas movimento para trás é permitido    
+      // 1) After rear collision or connected: only backward movement is allowed
       if (collisionDirection.down || isConnected) {
         if (pressed.trailer_up && !collisionDirection.up) {
           trailer.updateX(-0.3);
@@ -596,7 +596,7 @@ function update() {
       if(moved) isColliding = false;
       }
 
-      // 2) Colisão pelo lado direito: proibir movimento para a direita
+      // 2) Collision from the right side: prohibit movement to the right
       else if (collisionDirection.right) {
         if (pressed.trailer_up && !collisionDirection.up) {
           trailer.updateX(-0.3);
@@ -612,7 +612,7 @@ function update() {
         }
       }
 
-      // 3) Colisão pelo lado esquerdo: proibir movimento para a esquerda
+      // 3) Collision from the left side: prohibit movement to the left
       else if (collisionDirection.left) {
         if (pressed.trailer_up && !collisionDirection.up) {
           trailer.updateX(-0.3);
@@ -627,7 +627,8 @@ function update() {
           moved = true;
         }
       }
-      // Sem colisão
+      
+      // No collision: allow movement in all directions
       else {
         if (pressed.trailer_up && !collisionDirection.up) {
           trailer.updateX(-0.3);
@@ -647,9 +648,9 @@ function update() {
         }
       }
     }
-    // Modo Robô
+    // ROBOT MODE
     else {
-      // Permitir movimento em todas as direções, exceto na direção da colisão
+      // Allow movement in all directions, except in the direction of the collision
       if (pressed.trailer_up && !collisionDirection.up) {
         trailer.updateX(-0.3);
         moved = true;
@@ -668,13 +669,13 @@ function update() {
       }
     }
 
-    // Resetar colisão apenas se houve movimento
+    // Reset collision only if there was movement
     if (moved) {
       isColliding = false;
       collisionDirection = { up: false, down: false, left: false, right: false };
     }
   
-  // ANIMAÇÃO
+  // ANIMATION
   } else {
     trailer.getBox().material.color.setHex(0xffffff);
     const trailerObject = trailer.getObject();

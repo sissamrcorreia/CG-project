@@ -19,7 +19,14 @@ let pressed = { wireframe: false, trailer_up: false, trailer_down: false,
 const animationDuration = 1.5;
 let animationStartTime = 0;
 let isAnimating = false;
+let isConnected = false;
 let isColliding = false;
+let collisionDirection = {
+  up: false,
+  down: false,
+  left: false,
+  right: false,
+}
 
 let body, trailer;
 let body_box, trailer_box;
@@ -527,8 +534,29 @@ function setCamera(index) {
 /* CHECK COLLISIONS */
 //////////////////////
 function checkCollisions() {
-  if (trailer_box.intersectsBox(body_box)) handleCollisions();
-  else animationStartTime = 0;
+  if (trailer_box.intersectsBox(body_box)) {
+    const overlapX = Math.min(trailer_box.max.x, body_box.max.x) - Math.max(trailer_box.min.x, body_box.min.x);
+    const overlapZ = Math.min(trailer_box.max.z, body_box.max.z) - Math.max(trailer_box.min.z, body_box.min.z);
+
+    if (overlapX < overlapZ) {
+      // X
+      if (trailer_box.min.x > body_box.max.x - 0.1) {
+        collisionDirection.up = true;
+      } else if (trailer_box.max.x < body_box.min.x + 0.1) {
+        collisionDirection.down = true;
+      }
+    } else {
+      // Z
+      if (trailer_box.min.z < body_box.max.z) {
+        collisionDirection.left = true;
+      } else if (trailer_box.max.z > body_box.min.z) {
+        collisionDirection.right = true;
+      }
+    }
+
+    handleCollisions();
+  }
+  else animationStartTime = 0, isConnected = false, collisionDirection = {};
 }
 
 ///////////////////////
@@ -561,26 +589,31 @@ function update() {
     // Handle trailer movement
 
     if (pressed.trailer_up) {
-      trailer.updateX(-0.3)
-      moved = true;
+      if (!isColliding || (isColliding && body.isTruck() && isConnected) || collisionDirection.up) {
+        trailer.updateX(-0.3);
+        moved = true;
+      }
     }
 
     if (pressed.trailer_left) {
-      if(isColliding && body.isTruck()) return;
-      trailer.updateZ(0.3)
-      moved = true;
+      if(!collisionDirection.left) {
+        trailer.updateZ(0.3)
+        moved = true;
+      }
     }
 
     if (pressed.trailer_right) {
-      if(isColliding && body.isTruck()) return;
+      if(!collisionDirection.right) {
       trailer.updateZ(-0.3)
       moved = true;
+      }
     }
      
     if (pressed.trailer_down) {
-      if(isColliding && body.isTruck()) return;
-      trailer.updateX(0.3)
-      moved = true;
+      if(!collisionDirection.down) {
+        trailer.updateX(0.3)
+        moved = true;
+      }
     }
 
     if(moved) isColliding = false; // TODO: check if it is needed
@@ -615,6 +648,7 @@ function update() {
       // Animation complete
       trailerObject.position.set(targetX, currentPos.y, targetZ);
       isAnimating = false;
+      isConnected = true;
     }
   }
 

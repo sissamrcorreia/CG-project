@@ -540,17 +540,17 @@ function checkCollisions() {
 
     if (overlapX < overlapZ) {
       // X
-      if (trailer_box.min.x > body_box.max.x - 0.1) {
-        collisionDirection.up = true;
-      } else if (trailer_box.max.x < body_box.min.x + 0.1) {
+      if (trailer_box.min.x > body_box.max.x - 1) {
         collisionDirection.down = true;
+      } else if (trailer_box.max.x < body_box.min.x + 1) {
+        collisionDirection.up = true;
       }
     } else {
       // Z
-      if (trailer_box.min.z < body_box.max.z) {
-        collisionDirection.left = true;
-      } else if (trailer_box.max.z > body_box.min.z) {
+      if (trailer_box.min.z < 0) {
         collisionDirection.right = true;
+      } else if (trailer_box.max.z > body_box.min.z) {
+        collisionDirection.left = true;
       }
     }
 
@@ -584,40 +584,97 @@ function update() {
   if (!isAnimating) {
     trailer.getBox().material.color.setHex(0xcccfcf);
     let moved = false;
-    // TODO: complete movements ifs
-    
-    // Handle trailer movement
 
-    if (pressed.trailer_up) {
-      if (!isColliding || (isColliding && body.isTruck() && isConnected) || collisionDirection.up) {
+    // MODO CAMIÃO
+    if (body.isTruck()) {
+      // 1) Após colisão de trás ou conectado: apenas movimento para trás é permitido    
+      if (collisionDirection.down || isConnected) {
+        if (pressed.trailer_up && !collisionDirection.up) {
+          trailer.updateX(-0.3);
+          moved = true;
+        }
+      if(moved) isColliding = false;
+      }
+
+      // 2) Colisão pelo lado direito: proibir movimento para a direita
+      else if (collisionDirection.right) {
+        if (pressed.trailer_up && !collisionDirection.up) {
+          trailer.updateX(-0.3);
+          moved = true;
+        }
+        if (pressed.trailer_down && !collisionDirection.down) {
+          trailer.updateX(0.3);
+          moved = true;
+        }
+        if (pressed.trailer_left && !collisionDirection.left) {
+          trailer.updateZ(0.3);
+          moved = true;
+        }
+      }
+
+      // 3) Colisão pelo lado esquerdo: proibir movimento para a esquerda
+      else if (collisionDirection.left) {
+        if (pressed.trailer_up && !collisionDirection.up) {
+          trailer.updateX(-0.3);
+          moved = true;
+        }
+        if (pressed.trailer_down && !collisionDirection.down) {
+          trailer.updateX(0.3);
+          moved = true;
+        }
+        if (pressed.trailer_right && !collisionDirection.right) {
+          trailer.updateZ(-0.3);
+          moved = true;
+        }
+      }
+      // Sem colisão
+      else {
+        if (pressed.trailer_up && !collisionDirection.up) {
+          trailer.updateX(-0.3);
+          moved = true;
+        }
+        if (pressed.trailer_down && !collisionDirection.down) {
+          trailer.updateX(0.3);
+          moved = true;
+        }
+        if (pressed.trailer_left && !collisionDirection.left) {
+          trailer.updateZ(0.3);
+          moved = true;
+        }
+        if (pressed.trailer_right && !collisionDirection.right) {
+          trailer.updateZ(-0.3);
+          moved = true;
+        }
+      }
+    }
+    // Modo Robô
+    else {
+      // Permitir movimento em todas as direções, exceto na direção da colisão
+      if (pressed.trailer_up && !collisionDirection.up) {
         trailer.updateX(-0.3);
         moved = true;
       }
-    }
-
-    if (pressed.trailer_left) {
-      if(!collisionDirection.left) {
-        trailer.updateZ(0.3)
+      if (pressed.trailer_down && !collisionDirection.down) {
+        trailer.updateX(0.3);
+        moved = true;
+      }
+      if (pressed.trailer_left && !collisionDirection.left) {
+        trailer.updateZ(0.3);
+        moved = true;
+      }
+      if (pressed.trailer_right && !collisionDirection.right) {
+        trailer.updateZ(-0.3);
         moved = true;
       }
     }
 
-    if (pressed.trailer_right) {
-      if(!collisionDirection.right) {
-      trailer.updateZ(-0.3)
-      moved = true;
-      }
+    // Resetar colisão apenas se houve movimento
+    if (moved) {
+      isColliding = false;
+      collisionDirection = { up: false, down: false, left: false, right: false };
     }
-     
-    if (pressed.trailer_down) {
-      if(!collisionDirection.down) {
-        trailer.updateX(0.3)
-        moved = true;
-      }
-    }
-
-    if(moved) isColliding = false; // TODO: check if it is needed
-
+  
+  // ANIMAÇÃO
   } else {
     trailer.getBox().material.color.setHex(0xffffff);
     const trailerObject = trailer.getObject();

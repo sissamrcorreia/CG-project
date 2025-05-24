@@ -10,5 +10,5 @@
 * [X] Permitir ao utilizador deslocar o reboque pelo plano invisível com o teclado utilizando as teclas das setas para o reposicionar segundo os eixos globais dos X e Y, respetivamente. O referencial do reboque deve estar alinhado com o referencial do robô-camião
 * [X] A representação visual dos objetos da cena deve alternar entre modelo de arames e sólida usando a tecla ‘7’
 * [X] AABBs para detetar a colisão
-* [ ] Animação que desloca o reboque para o ponto de ligação com o camião
+* [X] Animação que desloca o reboque para o ponto de ligação com o camião
 * [X] Não é requerida a implementação devida dos acontecimentos de redimensionamento da janela, mas tal vai ser pedido no Trabalho C

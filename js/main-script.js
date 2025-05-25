@@ -90,6 +90,14 @@ const ELLIPSOID_SCALING = {
 //////////////////////
 let renderer, scene, camera, rootGroup;
 
+let terrain, skyDome; // Store references to terrain and sky dome meshes
+let floralTexture, starrySkyTexture; // Store the canvas textures
+let isFloralFieldActive = false;
+let isStarrySkyActive = false;
+
+let isKey1Pressed = false;
+let isKey2Pressed = false;
+
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
@@ -113,15 +121,15 @@ function createScene() {
 
 function createTerrain() {
   const material = new THREE.MeshBasicMaterial(MATERIAL_PARAMS.terrain());
-  const plane = new THREE.Mesh(GEOMETRY.terrain, material);
-  plane.rotateX(-Math.PI / 2);
-  rootGroup.add(plane);
+  terrain = new THREE.Mesh(GEOMETRY.terrain, material); // Store reference
+  terrain.rotateX(-Math.PI / 2);
+  rootGroup.add(terrain);
 }
 
 function createSkyDome() {
   const material = new THREE.MeshBasicMaterial(MATERIAL_PARAMS.skyDome());
-  const dome = new THREE.Mesh(GEOMETRY.skyDome, material);
-  rootGroup.add(dome);
+  skyDome = new THREE.Mesh(GEOMETRY.skyDome, material); // Store reference
+  rootGroup.add(skyDome);
 }
 
 function createMoon() {
@@ -291,6 +299,72 @@ function createHouseDoorGeometry() {
   return geometry;
 }
 
+function createFloralFieldTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const context = canvas.getContext('2d');
+
+  context.fillStyle = COLORS.green.getStyle();
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Define flower colors
+  const flowerColors = [
+    COLORS.white.getStyle(),
+    COLORS.yellow.getStyle(),
+    COLORS.lilac.getStyle(),
+    COLORS.lightBlue.getStyle()
+  ];
+
+  // Draw 500 small circles
+  for (let i = 0; i < 500; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const radius = 1 + Math.random() * 2; // Small circles (1-3 pixels)
+    const color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
+
+    context.beginPath();
+    context.arc(x, y, radius, 0, 2 * Math.PI);
+    context.fillStyle = color;
+    context.fill();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(4, 4);
+  return texture;
+}
+
+function createStarrySkyTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const context = canvas.getContext('2d');
+
+  // Create linear gradient from dark blue to dark purple (top to bottom)
+  const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, COLORS.darkBlue.getStyle());
+  gradient.addColorStop(1, COLORS.darkPurple.getStyle());
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw 300 small white stars
+  context.fillStyle = COLORS.white.getStyle();
+  for (let i = 0; i < 300; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const radius = 0.5 + Math.random() * 1.5; // Very small stars (0.5-2 pixels)
+    context.beginPath();
+    context.arc(x, y, radius, 0, 2 * Math.PI);
+    context.fill();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(2, 2); // Adjust repeat to fit the sky dome
+  return texture;
+}
+
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
@@ -332,10 +406,15 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
+  floralTexture = createFloralFieldTexture();
+  starrySkyTexture = createStarrySkyTexture();
+
   createScene();
   createCamera();
 
   window.addEventListener('resize', onResize);
+  window.addEventListener('keydown', onKeyDown)
+  window.addEventListener('keyup', onKeyUp);
 }
 
 /////////////////////
@@ -361,10 +440,22 @@ function onResize() {
 function onKeyDown(e) {
     switch (e.keyCode) {
         case 49: // 1 -> campo floral
-            //createTerrainScene();
+            if (!isKey1Pressed) {
+                isKey1Pressed = true;
+                isFloralFieldActive = !isFloralFieldActive;
+                terrain.material.map = isFloralFieldActive ? floralTexture : null;
+                terrain.material.color.set(COLORS.green);
+                terrain.material.needsUpdate = true;
+            }
             break;
         case 50: // 2 -> céu estrelado
-            //createSkyScene();
+            if (!isKey2Pressed) {
+                isKey2Pressed = true;
+                isStarrySkyActive = !isStarrySkyActive;
+                skyDome.material.map = isStarrySkyActive ? starrySkyTexture : null;
+                skyDome.material.color.set(isStarrySkyActive ? COLORS.white : COLORS.darkBlue);
+                skyDome.material.needsUpdate = true;
+            }
             break;
         case 55: // 7 -> camera prespetiva
 
@@ -398,7 +489,42 @@ function onKeyDown(e) {
 ///////////////////////
 /* KEY UP CALLBACK */
 ///////////////////////
-function onKeyUp(e) {}
+function onKeyUp(e) {
+    switch (e.keyCode) {
+        case 49: // 1 -> campo floral
+            isKey1Pressed = false;
+            break;
+        case 50: // 2 -> céu estrelado
+            isKey2Pressed = false;
+            break;
+        case 55: // 7 -> camera prespetiva
+
+            break;
+        case 37: // left
+        case 39: // right
+        case 38: // up
+        case 40: // down
+            break;
+        case 80: // p -> point lights
+
+            break;
+        case 83: // s -> spotlight
+
+            break;
+        case 82: // r -> lighting calculations
+
+            break;
+        case 81: // q -> Gouraud shading
+
+            break;
+        case 87: // w -> Phong shading
+
+            break;
+        case 69: // e -> Cartoon shading
+
+            break;
+    }
+}
 
 init();
 animate();

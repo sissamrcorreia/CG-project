@@ -1,15 +1,15 @@
 
-* [ ] Create a Three.js application for a rural landscape scene with an alien spaceship
-* [ ] Generate procedural textures for a floral field and a terrain
+* [X] Create a Three.js application for a rural landscape scene with an alien spaceship
+* [X] Generate procedural textures for a floral field and a terrain
 * [ ] Model a typically Alentejano house using geometric primitives (cubes, cylinders, etc.) and polygon meshes
 * [ ] Model a tree using geometric primitives and polygon meshes
 * [ ] Model an Alentejano montado landscape using geometric primitives and polygon meshes
 * [ ] Apply textures to all scene objects that react to lighting
 * [ ] Implement a UFO orbiting the scene with:
-  * [ ] A flattened sphere for the UFO body
-  * [ ] A spherical cap for the cockpit
-  * [ ] Multiple small spheres radially placed at the bottom
-  * [ ] A flattened cylinder at the center of the bottom
+  * [X] A flattened sphere for the UFO body
+  * [X] A spherical cap for the cockpit
+  * [X] Multiple small spheres radially placed at the bottom
+  * [X] A flattened cylinder at the center of the bottom
   * [ ] Point lights anchored to each small sphere, toggled with 'P' or 'p'
   * [ ] Spotlight anchored to the cylinder, pointing downward, toggled with 'S' or 's'
   * [ ] Constant angular rotation around its symmetry axis
@@ -21,8 +21,7 @@
   * [ ] Toggle lighting calculations with 'R' or 'r'
 * [ ] Implement a fixed perspective camera with a view of the entire scene, selectable with '?'
 * [ ] Add a THREE.StereoCamera for VR support, following Three.js VR documentation
-* [ ] Host project contents (index.html, JavaScript, textures) online for VR testing
 * [ ] Implement the animation cycle with distinct update and display phases:
   * [ ] Display phase: clear buffer, draw scene, force command processing
   * [ ] Update phase: update object states, handle physics, and process collisions
-* [ ] Handle window resize events appropriately
+* [X] Handle window resize events appropriately

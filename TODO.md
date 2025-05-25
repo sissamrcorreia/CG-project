@@ -12,16 +12,13 @@
   * [X] A flattened cylinder at the center of the bottom
   * [ ] Point lights anchored to each small sphere, toggled with 'P' or 'p'
   * [ ] Spotlight anchored to the cylinder, pointing downward, toggled with 'S' or 's'
-  * [ ] Constant angular rotation around its symmetry axis
-  * [ ] Horizontal movement controlled by arrow keys (up, down, left, right), supporting simultaneous key presses
+  * [X] Constant angular rotation around its symmetry axis
+  * [X] Horizontal movement controlled by arrow keys (up, down, left, right), supporting simultaneous key presses
 * [ ] Define three material types for each scene object:
   * [ ] MeshLambertMaterial (Gouraud shading), toggled with 'Q' or 'q'
   * [ ] MeshPhongMaterial (Phong shading), toggled with 'W' or 'w'
   * [ ] MeshToonMaterial (Cartoon shading), toggled with 'E' or 'e'
   * [ ] Toggle lighting calculations with 'R' or 'r'
-* [ ] Implement a fixed perspective camera with a view of the entire scene, selectable with '?'
+* [ ] Implement a fixed perspective camera with a view of the entire scene, selectable with '7'
 * [ ] Add a THREE.StereoCamera for VR support, following Three.js VR documentation
-* [ ] Implement the animation cycle with distinct update and display phases:
-  * [ ] Display phase: clear buffer, draw scene, force command processing
-  * [ ] Update phase: update object states, handle physics, and process collisions
 * [X] Handle window resize events appropriately

@@ -27,20 +27,20 @@ const COLORS = Object.freeze({
 
 const MATERIAL_PARAMS = {
   skyDome: () => ({ color: COLORS.darkBlue, side: THREE.BackSide }),
-  terrain: () => ({ color: COLORS.green, side: THREE.DoubleSide }),
-  moon: () => ({ color: COLORS.moonYellow }),
-  treeTrunk: () => ({ color: COLORS.brown }),
-  treePrimaryBranch: () => ({ color: COLORS.brown }),
-  treeSecondaryBranch: () => ({ color: COLORS.brown }),
-  treeLeaf: () => ({ color: COLORS.darkGreen }),
-  ovniBody: () => ({ color: COLORS.imperialRed }),
-  ovniCockpit: () => ({ color: COLORS.skyBlue, opacity: 0.75, transparent: true }),
-  ovniSpotlight: () => ({ color: COLORS.lightCyan }),
-  ovniSphere: () => ({ color: COLORS.lightCyan }),
-  houseWalls: () => ({ color: COLORS.white }),
-  houseRoof: () => ({ color: COLORS.orange }),
-  houseWindows: () => ({ color: COLORS.lightBlue }),
-  houseDoor: () => ({ color: COLORS.dodgerBlue }),
+  terrain: () => ({ color: COLORS.green, side: THREE.DoubleSide, shininess: 10 }),
+  moon: () => ({ color: COLORS.moonYellow, shininess: 50 }),
+  treeTrunk: () => ({ color: COLORS.brown, shininess: 10 }),
+  treePrimaryBranch: () => ({ color: COLORS.brown, shininess: 10 }),
+  treeSecondaryBranch: () => ({ color: COLORS.brown, shininess: 10 }),
+  treeLeaf: () => ({ color: COLORS.darkGreen, shininess: 20 }),
+  ovniBody: () => ({ color: COLORS.imperialRed, shininess: 100 }),
+  ovniCockpit: () => ({ color: COLORS.skyBlue, opacity: 0.75, transparent: true, shininess: 50 }),
+  ovniSpotlight: () => ({ color: COLORS.lightCyan, shininess: 100 }),
+  ovniSphere: () => ({ color: COLORS.lightCyan, shininess: 100 }),
+  houseWalls: () => ({ color: COLORS.white, shininess: 30 }),
+  houseRoof: () => ({ color: COLORS.orange, shininess: 20 }),
+  houseWindows: () => ({ color: COLORS.lightBlue, shininess: 50 }),
+  houseDoor: () => ({ color: COLORS.dodgerBlue, shininess: 30 }),
 };
 
 const DOME_RADIUS = 64;
@@ -84,19 +84,30 @@ const ELLIPSOID_SCALING = {
   treeSecondaryBranchLeaf: new THREE.Vector3(3, 1.375, 2.5),
   ovniBody: new THREE.Vector3(3.5, 1, 3.5),
 };
+const OVNI_ANGULAR_SPEED = Math.PI / 2; // Radians per second
+const OVNI_LINEAR_SPEED = 20; // Units per second
 
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
 let renderer, scene, camera, rootGroup;
-
 let terrain, skyDome; // Store references to terrain and sky dome meshes
 let floralTexture, starrySkyTexture; // Store the canvas textures
 let isFloralFieldActive = false;
 let isStarrySkyActive = false;
-
 let isKey1Pressed = false;
 let isKey2Pressed = false;
+let ovni;
+let pointLights = [];
+let spotlight;
+let isPointLightsOn = true;
+let isSpotlightOn = true;
+const keysPressed = {
+  ArrowLeft: false,
+  ArrowRight: false,
+  ArrowUp: false,
+  ArrowDown: false
+};
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -120,20 +131,20 @@ function createScene() {
 }
 
 function createTerrain() {
-  const material = new THREE.MeshBasicMaterial(MATERIAL_PARAMS.terrain());
-  terrain = new THREE.Mesh(GEOMETRY.terrain, material); // Store reference
+  const material = new THREE.MeshPhongMaterial(MATERIAL_PARAMS.terrain());
+  terrain = new THREE.Mesh(GEOMETRY.terrain, material);
   terrain.rotateX(-Math.PI / 2);
   rootGroup.add(terrain);
 }
 
 function createSkyDome() {
   const material = new THREE.MeshBasicMaterial(MATERIAL_PARAMS.skyDome());
-  skyDome = new THREE.Mesh(GEOMETRY.skyDome, material); // Store reference
+  skyDome = new THREE.Mesh(GEOMETRY.skyDome, material);
   rootGroup.add(skyDome);
 }
 
 function createMoon() {
-  const material = new THREE.MeshBasicMaterial(MATERIAL_PARAMS.moon());
+  const material = new THREE.MeshPhongMaterial(MATERIAL_PARAMS.moon());
   const moon = new THREE.Mesh(GEOMETRY.moon, material);
   moon.position.copy(MOON_POSITION);
   rootGroup.add(moon);
@@ -145,10 +156,10 @@ function createHouse() {
   house.rotateY(Math.PI);
   rootGroup.add(house);
 
-  const walls = new THREE.Mesh(GEOMETRY.houseWalls, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.houseWalls()));
-  const roof = new THREE.Mesh(GEOMETRY.houseRoof, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.houseRoof()));
-  const windows = new THREE.Mesh(GEOMETRY.houseWindows, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.houseWindows()));
-  const door = new THREE.Mesh(GEOMETRY.houseDoor, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.houseDoor()));
+  const walls = new THREE.Mesh(GEOMETRY.houseWalls, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.houseWalls()));
+  const roof = new THREE.Mesh(GEOMETRY.houseRoof, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.houseRoof()));
+  const windows = new THREE.Mesh(GEOMETRY.houseWindows, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.houseWindows()));
+  const door = new THREE.Mesh(GEOMETRY.houseDoor, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.houseDoor()));
   house.add(walls, roof, windows, door);
 }
 
@@ -158,10 +169,10 @@ function createOakTree(trunkHeight, position, rotation) {
   treeGroup.rotation.copy(rotation);
   rootGroup.add(treeGroup);
 
-  const trunk = new THREE.Mesh(GEOMETRY.treeTrunk, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.treeTrunk()));
+  const trunk = new THREE.Mesh(GEOMETRY.treeTrunk, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.treeTrunk()));
   trunk.scale.setY(trunkHeight);
   trunk.position.setY(trunkHeight / 2);
-  const primaryBranch = new THREE.Mesh(GEOMETRY.treePrimaryBranch, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.treePrimaryBranch()));
+  const primaryBranch = new THREE.Mesh(GEOMETRY.treePrimaryBranch, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.treePrimaryBranch()));
   const primaryBranchIncl = Math.PI / 6;
   const primaryBranchX =
     Math.sin(primaryBranchIncl) *
@@ -175,7 +186,7 @@ function createOakTree(trunkHeight, position, rotation) {
     GEOMETRY.treeTrunk.parameters.radiusTop;
   primaryBranch.position.set(primaryBranchX, trunkHeight + primaryBranchY, 0);
   primaryBranch.rotation.set(0, 0, -primaryBranchIncl);
-  const secondaryBranch = new THREE.Mesh(GEOMETRY.treeSecondaryBranch, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.treeSecondaryBranch()));
+  const secondaryBranch = new THREE.Mesh(GEOMETRY.treeSecondaryBranch, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.treeSecondaryBranch()));
   const secondaryBranchIncl = Math.PI / 3;
   secondaryBranch.position.set(
     -GEOMETRY.treeSecondaryBranch.parameters.height / 4,
@@ -183,14 +194,14 @@ function createOakTree(trunkHeight, position, rotation) {
     0
   );
   secondaryBranch.rotation.set(0, 0, secondaryBranchIncl);
-  const primaryBranchLeaf = new THREE.Mesh(GEOMETRY.treeLeaf, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.treeLeaf()));
+  const primaryBranchLeaf = new THREE.Mesh(GEOMETRY.treeLeaf, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.treeLeaf()));
   primaryBranchLeaf.position.set(
     primaryBranchX * 2,
     trunkHeight + primaryBranchY * 2 + ELLIPSOID_SCALING.treePrimaryBranchLeaf.y / 2,
     0
   );
   primaryBranchLeaf.scale.copy(ELLIPSOID_SCALING.treePrimaryBranchLeaf);
-  const secondaryBranchLeaf = new THREE.Mesh(GEOMETRY.treeLeaf, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.treeLeaf()));
+  const secondaryBranchLeaf = new THREE.Mesh(GEOMETRY.treeLeaf, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.treeLeaf()));
   secondaryBranchLeaf.position.set(
     (-GEOMETRY.treeSecondaryBranch.parameters.height * 2) / 3,
     trunkHeight + primaryBranchY * 2 + ELLIPSOID_SCALING.treePrimaryBranchLeaf.y / 2,
@@ -201,30 +212,41 @@ function createOakTree(trunkHeight, position, rotation) {
 }
 
 function createOvni(initialPosition) {
-  const ovni = new THREE.Group();
+  ovni = new THREE.Group();
   ovni.position.copy(initialPosition);
   rootGroup.add(ovni);
 
-  const body = new THREE.Mesh(GEOMETRY.ovniBody, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.ovniBody()));
+  const body = new THREE.Mesh(GEOMETRY.ovniBody, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniBody()));
   body.scale.copy(ELLIPSOID_SCALING.ovniBody);
-  const cockpit = new THREE.Mesh(GEOMETRY.ovniCockpit, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.ovniCockpit()));
+  const cockpit = new THREE.Mesh(GEOMETRY.ovniCockpit, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniCockpit()));
   cockpit.position.set(0, ELLIPSOID_SCALING.ovniBody.y / 2, 0);
-  const spotlight = new THREE.Mesh(GEOMETRY.ovniSpotlight, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.ovniSpotlight()));
+  const spotlightMesh = new THREE.Mesh(GEOMETRY.ovniSpotlight, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniSpotlight()));
+  spotlightMesh.position.set(0, -ELLIPSOID_SCALING.ovniBody.y, 0);
+
+  // Create spotlight
+  spotlight = new THREE.SpotLight(COLORS.lightCyan, 1, 50, Math.PI / 6, 0.5);
   spotlight.position.set(0, -ELLIPSOID_SCALING.ovniBody.y, 0);
+  spotlight.target.position.set(0, -ELLIPSOID_SCALING.ovniBody.y - 1, 0); // Point downward
+  ovni.add(spotlight, spotlight.target);
 
-  ovni.add(body, cockpit, spotlight);
+  ovni.add(body, cockpit, spotlightMesh);
 
+  // Create small spheres with point lights
   for (let i = 0; i < OVNI_SPHERE_COUNT; i++) {
     const sphereGroup = new THREE.Group();
     sphereGroup.rotation.set(0, (i * 2 * Math.PI) / OVNI_SPHERE_COUNT, 0);
     ovni.add(sphereGroup);
-    const sphere = new THREE.Mesh(GEOMETRY.ovniSphere, new THREE.MeshBasicMaterial(MATERIAL_PARAMS.ovniSphere()));
+    const sphere = new THREE.Mesh(GEOMETRY.ovniSphere, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniSphere()));
     const sphereY = -ELLIPSOID_SCALING.ovniBody.y / 2;
     const sphereX = Math.sqrt(
       ELLIPSOID_SCALING.ovniBody.x ** 2 * (1 - sphereY ** 2 / ELLIPSOID_SCALING.ovniBody.y ** 2)
     );
     sphere.position.set(sphereX, sphereY, 0);
-    sphereGroup.add(sphere);
+    // Add point light
+    const pointLight = new THREE.PointLight(COLORS.lightCyan, 1, 10);
+    pointLight.position.set(sphereX, sphereY, 0);
+    sphereGroup.add(sphere, pointLight);
+    pointLights.push(pointLight);
   }
 }
 
@@ -361,7 +383,7 @@ function createStarrySkyTexture() {
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(2, 2); // Adjust repeat to fit the sky dome
+  texture.repeat.set(2, 2);
   return texture;
 }
 
@@ -382,13 +404,39 @@ function createCamera() {
 /* CREATE LIGHT(S) */
 /////////////////////
 function createLights() {
-  // TODO
+  const ambientLight = new THREE.AmbientLight(0x404040, 1);
+  scene.add(ambientLight);
 }
 
 ////////////
 /* UPDATE */
 ////////////
-function update() {}
+function update(delta) {
+  // Rotate ovni around Y-axis
+  if (ovni) {
+    ovni.rotation.y += OVNI_ANGULAR_SPEED * delta;
+  }
+
+  // Move ovni based on key presses
+  const direction = new THREE.Vector3();
+  if (keysPressed.ArrowLeft) direction.x -= 1;
+  if (keysPressed.ArrowRight) direction.x += 1;
+  if (keysPressed.ArrowUp) direction.z -= 1;
+  if (keysPressed.ArrowDown) direction.z += 1;
+
+  if (direction.lengthSq() > 0) {
+    direction.normalize();
+    ovni.position.addScaledVector(direction, OVNI_LINEAR_SPEED * delta);
+
+    const maxRadius = DOME_RADIUS - 5;
+    const horizontalPos = new THREE.Vector2(ovni.position.x, ovni.position.z);
+    if (horizontalPos.length() > maxRadius) {
+      horizontalPos.clampLength(0, maxRadius);
+      ovni.position.setX(horizontalPos.x);
+      ovni.position.setZ(horizontalPos.y);
+    }
+  }
+}
 
 /////////////
 /* DISPLAY */
@@ -411,9 +459,10 @@ function init() {
 
   createScene();
   createCamera();
+  createLights();
 
   window.addEventListener('resize', onResize);
-  window.addEventListener('keydown', onKeyDown)
+  window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
 }
 
@@ -421,7 +470,9 @@ function init() {
 /* ANIMATION CYCLE */
 /////////////////////
 function animate() {
+  const delta = 1 / 60;
   requestAnimationFrame(animate);
+  update(delta);
   render();
 }
 
@@ -438,92 +489,108 @@ function onResize() {
 /* KEY DOWN CALLBACK */
 ///////////////////////
 function onKeyDown(e) {
-    switch (e.keyCode) {
-        case 49: // 1 -> campo floral
-            if (!isKey1Pressed) {
-                isKey1Pressed = true;
-                isFloralFieldActive = !isFloralFieldActive;
-                terrain.material.map = isFloralFieldActive ? floralTexture : null;
-                terrain.material.color.set(COLORS.green);
-                terrain.material.needsUpdate = true;
-            }
-            break;
-        case 50: // 2 -> céu estrelado
-            if (!isKey2Pressed) {
-                isKey2Pressed = true;
-                isStarrySkyActive = !isStarrySkyActive;
-                skyDome.material.map = isStarrySkyActive ? starrySkyTexture : null;
-                skyDome.material.color.set(isStarrySkyActive ? COLORS.white : COLORS.darkBlue);
-                skyDome.material.needsUpdate = true;
-            }
-            break;
-        case 55: // 7 -> camera prespetiva
-
-            break;
-        case 37: // left
-        case 39: // right
-        case 38: // up
-        case 40: // down
-            break;
-        case 80: // p -> point lights
-
-            break;
-        case 83: // s -> spotlight
-
-            break;
-        case 82: // r -> lighting calculations
-
-            break;
-        case 81: // q -> Gouraud shading
-
-            break;
-        case 87: // w -> Phong shading
-
-            break;
-        case 69: // e -> Cartoon shading
-
-            break;
-    }
+  switch (e.key) {
+    case '1': // 1 -> campo floral
+      if (!isKey1Pressed) {
+        isKey1Pressed = true;
+        isFloralFieldActive = !isFloralFieldActive;
+        terrain.material.map = isFloralFieldActive ? floralTexture : null;
+        terrain.material.color.set(COLORS.green);
+        terrain.material.needsUpdate = true;
+      }
+      break;
+    case '2': // 2 -> céu estrelado
+      if (!isKey2Pressed) {
+        isKey2Pressed = true;
+        isStarrySkyActive = !isStarrySkyActive;
+        skyDome.material.map = isStarrySkyActive ? starrySkyTexture : null;
+        skyDome.material.color.set(isStarrySkyActive ? COLORS.white : COLORS.darkBlue);
+        skyDome.material.needsUpdate = true;
+      }
+      break;
+    case '7': // 7 -> camera prespetiva
+      // TODO
+      break;
+    case 'ArrowLeft':
+      keysPressed.ArrowLeft = true;
+      break;
+    case 'ArrowRight':
+      keysPressed.ArrowRight = true;
+      break;
+    case 'ArrowUp':
+      keysPressed.ArrowUp = true;
+      break;
+    case 'ArrowDown':
+      keysPressed.ArrowDown = true;
+      break;
+    case 'd': // d -> fonte de luz direcional lua
+    case 'D':
+        // TODO
+        break;
+    case 'p': // p -> point lights FIXME
+    case 'P':
+      isPointLightsOn = !isPointLightsOn;
+      pointLights.forEach(light => light.visible = isPointLightsOn);
+      break;
+    case 's': // s -> spotlight FIXME
+    case 'S':
+      isSpotlightOn = !isSpotlightOn;
+      spotlight.visible = isSpotlightOn;
+    case 'r': // r -> lighting calculations
+    case 'R':
+      // TODO
+      break;
+    case 'q': // q -> Gouraud shading
+    case 'Q':
+      // TODO
+      break;
+    case 'w': // w -> Phong shading
+    case 'W':
+      // TODO
+      break;
+    case 'e': // e -> Lambert shading
+    case 'E':
+      // TODO
+      break;
+  }
 }
 
 ///////////////////////
 /* KEY UP CALLBACK */
 ///////////////////////
 function onKeyUp(e) {
-    switch (e.keyCode) {
-        case 49: // 1 -> campo floral
-            isKey1Pressed = false;
-            break;
-        case 50: // 2 -> céu estrelado
-            isKey2Pressed = false;
-            break;
-        case 55: // 7 -> camera prespetiva
-
-            break;
-        case 37: // left
-        case 39: // right
-        case 38: // up
-        case 40: // down
-            break;
-        case 80: // p -> point lights
-
-            break;
-        case 83: // s -> spotlight
-
-            break;
-        case 82: // r -> lighting calculations
-
-            break;
-        case 81: // q -> Gouraud shading
-
-            break;
-        case 87: // w -> Phong shading
-
-            break;
-        case 69: // e -> Cartoon shading
-
-            break;
-    }
+  switch (e.key) {
+    case '1':
+      isKey1Pressed = false;
+      break;
+    case '2':
+      isKey2Pressed = false;
+      break;
+    case 'ArrowLeft':
+      keysPressed.ArrowLeft = false;
+      break;
+    case 'ArrowRight':
+      keysPressed.ArrowRight = false;
+      break;
+    case 'ArrowUp':
+      keysPressed.ArrowUp = false;
+      break;
+    case 'ArrowDown':
+      keysPressed.ArrowDown = false;
+      break;
+    case 'r':
+    case 'R':
+      break;
+    case 'q':
+    case 'Q':
+      break;
+    case 'w':
+    case 'W':
+      break;
+    case 'e':
+    case 'E':
+      break;
+  }
 }
 
 init();

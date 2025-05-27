@@ -13,13 +13,13 @@ const COLORS = Object.freeze({
   lilac: new THREE.Color(0xc8a2c8),
   green: new THREE.Color(0x55cc55),
   darkGreen: new THREE.Color(0x5e8c61),
-  imperialRed: new THREE.Color(0xf03a47),
+  red: new THREE.Color(0xf03a47),
   skyBlue: new THREE.Color(0x84cae7),
   lightCyan: new THREE.Color(0xc9e4e7),
   brown: new THREE.Color(0xa96633),
   orange: new THREE.Color(0xea924b),
   lightBlue: new THREE.Color(0xb8e9ee),
-  dodgerBlue: new THREE.Color(0x1e90ff),
+  blue: new THREE.Color(0x1e90ff),
   white: new THREE.Color(0xffffff),
   yellow: new THREE.Color(0xffff00),
   moonYellow: new THREE.Color(0xebc815),
@@ -33,14 +33,14 @@ const MATERIAL_PARAMS = {
   treePrimaryBranch: () => ({ color: COLORS.brown, shininess: 10 }),
   treeSecondaryBranch: () => ({ color: COLORS.brown, shininess: 10 }),
   treeLeaf: () => ({ color: COLORS.darkGreen, shininess: 20 }),
-  ovniBody: () => ({ color: COLORS.imperialRed, shininess: 100 }),
+  ovniBody: () => ({ color: COLORS.red, shininess: 100 }),
   ovniCockpit: () => ({ color: COLORS.skyBlue, opacity: 0.75, transparent: true, shininess: 50 }),
   ovniSpotlight: () => ({ color: COLORS.lightCyan, shininess: 100 }),
   ovniSphere: () => ({ color: COLORS.lightCyan, shininess: 100 }),
   houseWalls: () => ({ color: COLORS.white, shininess: 30 }),
   houseRoof: () => ({ color: COLORS.orange, shininess: 20 }),
   houseWindows: () => ({ color: COLORS.lightBlue, shininess: 50 }),
-  houseDoor: () => ({ color: COLORS.dodgerBlue, shininess: 30 }),
+  houseDoor: () => ({ color: COLORS.blue, shininess: 30 }),
 };
 
 const DOME_RADIUS = 64;
@@ -128,6 +128,8 @@ function createScene() {
   createOakTree(4, new THREE.Vector3(-14, 2.25, -23), new THREE.Euler(0, -Math.PI / 2, 0));
   createOakTree(8, new THREE.Vector3(15, 2.75, -26), new THREE.Euler(0, Math.PI / 3, 0));
   createOvni(new THREE.Vector3(0, 20, 0));
+
+  createLights();
 }
 
 function createTerrain() {
@@ -459,7 +461,6 @@ function init() {
 
   createScene();
   createCamera();
-  createLights();
 
   window.addEventListener('resize', onResize);
   window.addEventListener('keydown', onKeyDown);
@@ -490,7 +491,8 @@ function onResize() {
 ///////////////////////
 function onKeyDown(e) {
   switch (e.key) {
-    case '1': // 1 -> campo floral
+    // 1 -> campo floral
+    case '1':
       if (!isKey1Pressed) {
         isKey1Pressed = true;
         isFloralFieldActive = !isFloralFieldActive;
@@ -499,7 +501,9 @@ function onKeyDown(e) {
         terrain.material.needsUpdate = true;
       }
       break;
-    case '2': // 2 -> céu estrelado
+
+    // 2 -> céu estrelado
+    case '2':
       if (!isKey2Pressed) {
         isKey2Pressed = true;
         isStarrySkyActive = !isStarrySkyActive;
@@ -508,49 +512,46 @@ function onKeyDown(e) {
         skyDome.material.needsUpdate = true;
       }
       break;
-    case '7': // 7 -> camera prespetiva
+    
+    // 7 -> camera prespetiva
+    case '7':
       // TODO
       break;
-    case 'ArrowLeft':
-      keysPressed.ArrowLeft = true;
-      break;
-    case 'ArrowRight':
-      keysPressed.ArrowRight = true;
-      break;
-    case 'ArrowUp':
-      keysPressed.ArrowUp = true;
-      break;
-    case 'ArrowDown':
-      keysPressed.ArrowDown = true;
-      break;
-    case 'd': // d -> fonte de luz direcional lua
-    case 'D':
-        // TODO
-        break;
-    case 'p': // p -> point lights FIXME
-    case 'P':
+    
+    // ovni movement
+    case 'ArrowLeft': keysPressed.ArrowLeft = true; break;
+    case 'ArrowRight': keysPressed.ArrowRight = true; break;
+    case 'ArrowUp': keysPressed.ArrowUp = true; break;
+    case 'ArrowDown': keysPressed.ArrowDown = true; break;
+    
+    // d -> directional light TODO
+    case 'd': case 'D': break;
+    
+    // p -> point lights FIXME
+    case 'p': case 'P':
       isPointLightsOn = !isPointLightsOn;
       pointLights.forEach(light => light.visible = isPointLightsOn);
       break;
-    case 's': // s -> spotlight FIXME
-    case 'S':
+    
+    // s -> spotlight FIXME
+    case 's': case 'S':
       isSpotlightOn = !isSpotlightOn;
       spotlight.visible = isSpotlightOn;
-    case 'r': // r -> lighting calculations
-    case 'R':
-      // TODO
+    
+    // r -> lighting calculations TODO
+    case 'r': case 'R':
       break;
-    case 'q': // q -> Gouraud shading
-    case 'Q':
-      // TODO
+    
+    // q -> Gouraud shading TODO
+    case 'q': case 'Q':
       break;
-    case 'w': // w -> Phong shading
-    case 'W':
-      // TODO
+    
+    // w -> Phong shading TODO
+    case 'w': case 'W':
       break;
-    case 'e': // e -> Lambert shading
-    case 'E':
-      // TODO
+    
+    // e -> Lambert shading TODO
+    case 'e': case 'E':
       break;
   }
 }
@@ -560,35 +561,21 @@ function onKeyDown(e) {
 ///////////////////////
 function onKeyUp(e) {
   switch (e.key) {
-    case '1':
-      isKey1Pressed = false;
+    case '1': isKey1Pressed = false; break;
+    case '2': isKey2Pressed = false; break;
+    
+    case 'ArrowLeft': keysPressed.ArrowLeft = false; break;
+    case 'ArrowRight': keysPressed.ArrowRight = false; break;
+    case 'ArrowUp': keysPressed.ArrowUp = false; break;
+    case 'ArrowDown': keysPressed.ArrowDown = false; break;
+    
+    case 'r': case 'R':
       break;
-    case '2':
-      isKey2Pressed = false;
+    case 'q': case 'Q':
       break;
-    case 'ArrowLeft':
-      keysPressed.ArrowLeft = false;
+    case 'w': case 'W':
       break;
-    case 'ArrowRight':
-      keysPressed.ArrowRight = false;
-      break;
-    case 'ArrowUp':
-      keysPressed.ArrowUp = false;
-      break;
-    case 'ArrowDown':
-      keysPressed.ArrowDown = false;
-      break;
-    case 'r':
-    case 'R':
-      break;
-    case 'q':
-    case 'Q':
-      break;
-    case 'w':
-    case 'W':
-      break;
-    case 'e':
-    case 'E':
+    case 'e': case 'E':
       break;
   }
 }

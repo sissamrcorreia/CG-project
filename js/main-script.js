@@ -27,21 +27,35 @@ const COLORS = Object.freeze({
 
 const MATERIAL_PARAMS = {
   skyDome: () => ({ color: COLORS.darkBlue, side: THREE.BackSide }),
-  terrain: () => ({ color: COLORS.green, side: THREE.DoubleSide, shininess: 10 }),
+  terrain: () => ({
+    color: COLORS.green,
+    side: THREE.DoubleSide,
+    bumpMap: terrainHeightMap,
+    bumpScale: 1,
+    shininess: 10,
+    displacementMap: terrainHeightMap,
+    displacementScale: 5,
+  }),
+  
   moon: () => ({ color: COLORS.moonYellow, shininess: 50 }),
+  
   treeTrunk: () => ({ color: COLORS.brown, shininess: 10 }),
   treePrimaryBranch: () => ({ color: COLORS.brown, shininess: 10 }),
   treeSecondaryBranch: () => ({ color: COLORS.brown, shininess: 10 }),
   treeLeaf: () => ({ color: COLORS.darkGreen, shininess: 20 }),
+  
   ovniBody: () => ({ color: COLORS.red, shininess: 100 }),
   ovniCockpit: () => ({ color: COLORS.skyBlue, opacity: 0.75, transparent: true, shininess: 50 }),
   ovniSpotlight: () => ({ color: COLORS.lightCyan, shininess: 100 }),
   ovniSphere: () => ({ color: COLORS.lightCyan, shininess: 100 }),
+  
   houseWalls: () => ({ color: COLORS.white, shininess: 30 }),
   houseRoof: () => ({ color: COLORS.orange, shininess: 20 }),
   houseWindows: () => ({ color: COLORS.lightBlue, shininess: 50 }),
   houseDoor: () => ({ color: COLORS.blue, shininess: 30 }),
 };
+
+const TERRAIN_HEIGHT_MAP_PATH = 'assets/height_map.png';
 
 const DOME_RADIUS = 64;
 const MOON_DOME_PADDING = 10;
@@ -64,20 +78,25 @@ const GEOMETRY = {
     Math.PI / 2
   ),
   terrain: new THREE.CircleGeometry(DOME_RADIUS, 128),
+  
   moon: new THREE.SphereGeometry(5, SPHERE_SEGMENTS, SPHERE_SEGMENTS),
+  
   treeTrunk: new THREE.CylinderGeometry(0.5, 0.5, 1, CYLINDER_SEGMENTS),
   treePrimaryBranch: new THREE.CylinderGeometry(0.5, 0.5, 4, CYLINDER_SEGMENTS),
   treeSecondaryBranch: new THREE.CylinderGeometry(0.4, 0.4, 4, CYLINDER_SEGMENTS),
   treeLeaf: new THREE.SphereGeometry(1, SPHERE_SEGMENTS, SPHERE_SEGMENTS),
+  
   ovniBody: new THREE.SphereGeometry(1, SPHERE_SEGMENTS, SPHERE_SEGMENTS),
   ovniCockpit: new THREE.SphereGeometry(1.5, SPHERE_SEGMENTS, SPHERE_SEGMENTS),
   ovniSpotlight: new THREE.CylinderGeometry(1.5, 1.5, 0.5, CYLINDER_SEGMENTS),
   ovniSphere: new THREE.SphereGeometry(0.25, SPHERE_SEGMENTS, SPHERE_SEGMENTS),
+  
   houseWalls: createHouseWallsGeometry(),
   houseRoof: createHouseRoofGeometry(),
   houseWindows: createHouseWindowsGeometry(),
   houseDoor: createHouseDoorGeometry(),
 };
+
 const OVNI_SPHERE_COUNT = 8;
 const ELLIPSOID_SCALING = {
   treePrimaryBranchLeaf: new THREE.Vector3(2.3, 1.1, 1.5),
@@ -90,7 +109,7 @@ const OVNI_LINEAR_SPEED = 20; // Units per second
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
-let renderer, scene, camera, rootGroup;
+let renderer, scene, camera, rootGroup, terrainHeightMap;
 let terrain, skyDome; // Store references to terrain and sky dome meshes
 let floralTexture, starrySkyTexture; // Store the canvas textures
 let isFloralFieldActive = false;
@@ -459,6 +478,9 @@ function init() {
   floralTexture = createFloralFieldTexture();
   starrySkyTexture = createStarrySkyTexture();
 
+  const loader = new THREE.TextureLoader();
+  terrainHeightMap = loader.load(TERRAIN_HEIGHT_MAP_PATH);
+
   createScene();
   createCamera();
 
@@ -497,7 +519,7 @@ function onKeyDown(e) {
         isKey1Pressed = true;
         isFloralFieldActive = !isFloralFieldActive;
         terrain.material.map = isFloralFieldActive ? floralTexture : null;
-        terrain.material.color.set(COLORS.green);
+        //terrain.material.color.set(COLORS.green);
         terrain.material.needsUpdate = true;
       }
       break;

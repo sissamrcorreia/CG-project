@@ -37,7 +37,7 @@ const MATERIAL_PARAMS = {
     displacementScale: 5,
   }),
   
-  moon: () => ({ color: COLORS.moonYellow, shininess: 50 }),
+  moon: () => ({ color: COLORS.moonYellow, emissive: COLORS.moonYellow }),
   
   treeTrunk: () => ({ color: COLORS.brown, shininess: 10 }),
   treePrimaryBranch: () => ({ color: COLORS.brown, shininess: 10 }),
@@ -54,6 +54,17 @@ const MATERIAL_PARAMS = {
   houseWindows: () => ({ color: COLORS.lightBlue, shininess: 50 }),
   houseDoor: () => ({ color: COLORS.blue, shininess: 30 }),
 };
+
+const LIGHT_INTENSITY = Object.freeze({
+  ambient: 1,
+  directional: 1,
+  ovniSpotlight: 3,
+  ovniSphere: 1,
+});
+
+const OVNI_SPOTLIGHT_ANGLE = Math.PI / 9;
+const OVNI_SPOTLIGHT_PENUMBRA = 0.3;
+const OVNI_SPHERE_LIGHT_DISTANCE = 10;
 
 const TERRAIN_HEIGHT_MAP_PATH = 'assets/height_map.png';
 
@@ -98,6 +109,8 @@ const GEOMETRY = {
 };
 
 const OVNI_SPHERE_COUNT = 8;
+const OVNI_SPHERE_LIGHTS = [];
+
 const ELLIPSOID_SCALING = {
   treePrimaryBranchLeaf: new THREE.Vector3(2.3, 1.1, 1.5),
   treeSecondaryBranchLeaf: new THREE.Vector3(3, 1.375, 2.5),
@@ -105,6 +118,8 @@ const ELLIPSOID_SCALING = {
 };
 const OVNI_ANGULAR_SPEED = Math.PI / 2; // Radians per second
 const OVNI_LINEAR_SPEED = 20; // Units per second
+
+const CLOCK = new THREE.Clock();
 
 //////////////////////
 /* GLOBAL VARIABLES */
@@ -114,14 +129,18 @@ let terrain, skyDome; // Store references to terrain and sky dome meshes
 let floralTexture, starrySkyTexture; // Store the canvas textures
 let isFloralFieldActive = false;
 let isStarrySkyActive = false;
-let isKey1Pressed = false;
-let isKey2Pressed = false;
-let ovni;
+let moonLight;
+let ovni, ovniSpotlight;
 let pointLights = [];
 let spotlight;
 let isPointLightsOn = true;
 let isSpotlightOn = true;
+
 const keysPressed = {
+  _1: false,
+  _2: false,
+  d: false,
+  p: false,
   ArrowLeft: false,
   ArrowRight: false,
   ArrowUp: false,
@@ -233,6 +252,63 @@ function createOakTree(trunkHeight, position, rotation) {
 }
 
 function createOvni(initialPosition) {
+  // ovni = new THREE.Group();
+  // ovni.position.copy(initialPosition);
+  // rootGroup.add(ovni);
+
+  // const body = new THREE.Mesh(GEOMETRY.ovniBody, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniBody()));
+  // body.scale.copy(ELLIPSOID_SCALING.ovniBody);
+  // const cockpit = new THREE.Mesh(GEOMETRY.ovniCockpit, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniCockpit()));
+  // cockpit.position.set(0, ELLIPSOID_SCALING.ovniBody.y / 2, 0);
+  // const spotlightMesh = new THREE.Mesh(GEOMETRY.ovniSpotlight, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniSpotlight()));
+  // spotlightMesh.position.set(0, -ELLIPSOID_SCALING.ovniBody.y, 0);
+
+  // // Create spotlight
+  // spotlight = new THREE.SpotLight(COLORS.lightCyan, 1, 50, Math.PI / 6, 0.5);
+  // spotlight.position.set(0, -ELLIPSOID_SCALING.ovniBody.y, 0);
+  
+  // const spotlightTarget = new THREE.Object3D();
+  // spotlightTarget.position.set(0, -10, 0); // Point downward
+  // ovni.add(spotlight, spotlight.target);
+
+  // ovniSpotlight = new THREE.SpotLight(
+  //   COLORS.darkBlue,
+  //   LIGHT_INTENSITY.ovni,
+  //   0,
+  //   OVNI_SPOTLIGHT_ANGLE,
+  //   OVNI_SPOTLIGHT_PENUMBRA
+  // );
+  // ovniSpotlight.position.copy(spotlight.position);
+  // ovniSpotlight.target = spotlightTarget;
+  // ovni.add(ovniSpotlight);
+
+  // ovni.add(body, cockpit, spotlightMesh);
+
+  // // Create small spheres with point lights
+  // for (let i = 0; i < OVNI_SPHERE_COUNT; i++) {
+  //   const sphereGroup = new THREE.Group();
+  //   sphereGroup.rotation.set(0, (i * 2 * Math.PI) / OVNI_SPHERE_COUNT, 0);
+  //   ovni.add(sphereGroup);
+    
+  //   const sphere = new THREE.Mesh(GEOMETRY.ovniSphere, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniSphere()));
+  //   const sphereY = -ELLIPSOID_SCALING.ovniBody.y / 2;
+  //   const sphereX = Math.sqrt(
+  //     ELLIPSOID_SCALING.ovniBody.x ** 2 * (1 - sphereY ** 2 / ELLIPSOID_SCALING.ovniBody.y ** 2)
+  //   );
+    
+  //   sphere.position.set(sphereX, sphereY, 0);
+    
+  //   // Add point light
+  //   const pointLight = new THREE.PointLight(
+  //     COLORS.darkBlue,
+  //     LIGHT_INTENSITY.ovniSphere,
+  //     OVNI_SPHERE_LIGHT_DISTANCE
+  //   );
+  //   pointLight.position.set(sphereX, sphereY, 0);
+  //   sphereGroup.add(sphere, pointLight);
+  //   OVNI_SPHERE_LIGHTS.push(pointLight);
+  // }
+
   ovni = new THREE.Group();
   ovni.position.copy(initialPosition);
   rootGroup.add(ovni);
@@ -425,8 +501,14 @@ function createCamera() {
 /* CREATE LIGHT(S) */
 /////////////////////
 function createLights() {
-  const ambientLight = new THREE.AmbientLight(0x404040, 1);
+  const ambientLight = new THREE.AmbientLight(0x404040, LIGHT_INTENSITY.ambient);
   scene.add(ambientLight);
+
+  moonLight = new THREE.DirectionalLight(COLORS.moonYellow, LIGHT_INTENSITY.directional);
+  moonLight.position.set(MOON_POSITION.x, MOON_POSITION.y, MOON_POSITION.z);
+  moonLight.target.position.set(15, 20, 5);
+  rootGroup.add(moonLight);
+  rootGroup.add(moonLight.target);
 }
 
 ////////////
@@ -515,8 +597,8 @@ function onKeyDown(e) {
   switch (e.key) {
     // 1 -> campo floral
     case '1':
-      if (!isKey1Pressed) {
-        isKey1Pressed = true;
+      if (!keysPressed._1) {
+        keysPressed._1 = true;
         isFloralFieldActive = !isFloralFieldActive;
         terrain.material.map = isFloralFieldActive ? floralTexture : null;
         //terrain.material.color.set(COLORS.green);
@@ -526,8 +608,8 @@ function onKeyDown(e) {
 
     // 2 -> céu estrelado
     case '2':
-      if (!isKey2Pressed) {
-        isKey2Pressed = true;
+      if (!keysPressed._2) {
+        keysPressed._2 = true;
         isStarrySkyActive = !isStarrySkyActive;
         skyDome.material.map = isStarrySkyActive ? starrySkyTexture : null;
         skyDome.material.color.set(isStarrySkyActive ? COLORS.white : COLORS.darkBlue);
@@ -545,14 +627,22 @@ function onKeyDown(e) {
     case 'ArrowRight': keysPressed.ArrowRight = true; break;
     case 'ArrowUp': keysPressed.ArrowUp = true; break;
     case 'ArrowDown': keysPressed.ArrowDown = true; break;
-    
+
     // d -> directional light TODO
-    case 'd': case 'D': break;
+    case 'd': case 'D':
+      if (!keysPressed.d) {
+        keysPressed.d = true;
+        moonLight.visible = !moonLight.visible;
+      }
+    break;
     
     // p -> point lights FIXME
     case 'p': case 'P':
-      isPointLightsOn = !isPointLightsOn;
-      pointLights.forEach(light => light.visible = isPointLightsOn);
+      if (!keysPressed.p) {
+        keysPressed.p = true;
+        isPointLightsOn = !isPointLightsOn;
+        pointLights.forEach(light => light.visible = isPointLightsOn);
+      }
       break;
     
     // s -> spotlight FIXME
@@ -583,13 +673,21 @@ function onKeyDown(e) {
 ///////////////////////
 function onKeyUp(e) {
   switch (e.key) {
-    case '1': isKey1Pressed = false; break;
-    case '2': isKey2Pressed = false; break;
+    case '1': keysPressed._1 = false; break;
+    case '2': keysPressed._2 = false; break;
     
     case 'ArrowLeft': keysPressed.ArrowLeft = false; break;
     case 'ArrowRight': keysPressed.ArrowRight = false; break;
     case 'ArrowUp': keysPressed.ArrowUp = false; break;
     case 'ArrowDown': keysPressed.ArrowDown = false; break;
+
+    case 'd': case 'D':
+      keysPressed.d = false;
+      break;
+
+    case 'p': case 'P':
+      keysPressed.p = false;
+      break;
     
     case 'r': case 'R':
       break;

@@ -32,27 +32,26 @@ const MATERIAL_PARAMS = {
     side: THREE.DoubleSide,
     bumpMap: terrainHeightMap,
     bumpScale: 1,
-    shininess: 10,
     displacementMap: terrainHeightMap,
     displacementScale: 5,
   }),
   
   moon: () => ({ color: COLORS.moonYellow, emissive: COLORS.moonYellow }),
   
-  treeTrunk: () => ({ color: COLORS.brown, shininess: 10 }),
-  treePrimaryBranch: () => ({ color: COLORS.brown, shininess: 10 }),
-  treeSecondaryBranch: () => ({ color: COLORS.brown, shininess: 10 }),
-  treeLeaf: () => ({ color: COLORS.darkGreen, shininess: 20 }),
+  treeTrunk: () => ({ color: COLORS.brown }),
+  treePrimaryBranch: () => ({ color: COLORS.brown }),
+  treeSecondaryBranch: () => ({ color: COLORS.brown }),
+  treeLeaf: () => ({ color: COLORS.darkGreen }),
   
-  ovniBody: () => ({ color: COLORS.red, shininess: 100 }),
-  ovniCockpit: () => ({ color: COLORS.skyBlue, opacity: 0.75, transparent: true, shininess: 50 }),
-  ovniSpotlight: () => ({ color: COLORS.lightCyan, shininess: 100 }),
-  ovniSphere: () => ({ color: COLORS.lightCyan, shininess: 100 }),
+  ovniBody: () => ({ color: COLORS.red }),
+  ovniCockpit: () => ({ color: COLORS.skyBlue, opacity: 0.75, transparent: true }),
+  ovniSpotlight: () => ({ color: COLORS.lightCyan, emissive: COLORS.darkBlue }),
+  ovniSphere: () => ({ color: COLORS.lightCyan, emissive: COLORS.darkBlue }),
   
-  houseWalls: () => ({ color: COLORS.white, shininess: 30 }),
-  houseRoof: () => ({ color: COLORS.orange, shininess: 20 }),
-  houseWindows: () => ({ color: COLORS.lightBlue, shininess: 50 }),
-  houseDoor: () => ({ color: COLORS.blue, shininess: 30 }),
+  houseWalls: () => ({ color: COLORS.white }),
+  houseRoof: () => ({ color: COLORS.orange }),
+  houseWindows: () => ({ color: COLORS.lightBlue }),
+  houseDoor: () => ({ color: COLORS.blue }),
 };
 
 const LIGHT_INTENSITY = Object.freeze({
@@ -135,6 +134,9 @@ let pointLights = [];
 let spotlight;
 let isPointLightsOn = true;
 let isSpotlightOn = true;
+
+let activeMaterial = 'phong'; // Default material
+let requestedMaterial = 'phong';
 
 const keysPressed = {
   _1: false,
@@ -539,6 +541,11 @@ function update(delta) {
       ovni.position.setZ(horizontalPos.y);
     }
   }
+
+  if (activeMaterial !== requestedMaterial) {
+    activeMaterial = requestedMaterial;
+    updateAllMaterials(activeMaterial);
+  }
 }
 
 /////////////
@@ -656,14 +663,20 @@ function onKeyDown(e) {
     
     // q -> Gouraud shading TODO
     case 'q': case 'Q':
+      requestedMaterial = 'gouraud';
+      console.log('Switching to Gouraud shading');
       break;
     
     // w -> Phong shading TODO
     case 'w': case 'W':
+      console.log('Switching to Phong shading');
+      requestedMaterial = 'phong';
       break;
     
     // e -> Lambert shading TODO
     case 'e': case 'E':
+      console.log('Switching to Lambert shading');
+      requestedMaterial = 'lambert';
       break;
   }
 }
@@ -697,6 +710,80 @@ function onKeyUp(e) {
       break;
     case 'e': case 'E':
       break;
+  }
+}
+
+function createMaterial(type, params) {
+  switch (type) {
+    case 'phong':
+      return new THREE.MeshPhongMaterial(params);
+    case 'lambert':
+      return new THREE.MeshLambertMaterial(params);
+    case 'gouraud':
+      // Gouraud shading is achieved with MeshLambertMaterial in three.js
+      return new THREE.MeshLambertMaterial(params);
+    default:
+      return new THREE.MeshPhongMaterial(params);
+  }
+}
+
+function updateAllMaterials(type) {
+  // Moon
+  rootGroup.traverse(obj => {
+    if (obj.isMesh && obj.geometry === GEOMETRY.moon) {
+      obj.material = createMaterial(type, MATERIAL_PARAMS.moon());
+      obj.material.needsUpdate = true;
+    }
+  });
+
+  // House
+  rootGroup.traverse(obj => {
+    if (obj.isMesh && obj.geometry === GEOMETRY.houseWalls) {
+      obj.material = createMaterial(type, MATERIAL_PARAMS.houseWalls());
+    }
+    if (obj.isMesh && obj.geometry === GEOMETRY.houseRoof) {
+      obj.material = createMaterial(type, MATERIAL_PARAMS.houseRoof());
+    }
+    if (obj.isMesh && obj.geometry === GEOMETRY.houseWindows) {
+      obj.material = createMaterial(type, MATERIAL_PARAMS.houseWindows());
+    }
+    if (obj.isMesh && obj.geometry === GEOMETRY.houseDoor) {
+      obj.material = createMaterial(type, MATERIAL_PARAMS.houseDoor());
+    }
+  });
+
+  // Trees
+  rootGroup.traverse(obj => {
+    if (obj.isMesh && obj.geometry === GEOMETRY.treeTrunk) {
+      obj.material = createMaterial(type, MATERIAL_PARAMS.treeTrunk());
+    }
+    if (obj.isMesh && obj.geometry === GEOMETRY.treePrimaryBranch) {
+      obj.material = createMaterial(type, MATERIAL_PARAMS.treePrimaryBranch());
+    }
+    if (obj.isMesh && obj.geometry === GEOMETRY.treeSecondaryBranch) {
+      obj.material = createMaterial(type, MATERIAL_PARAMS.treeSecondaryBranch());
+    }
+    if (obj.isMesh && obj.geometry === GEOMETRY.treeLeaf) {
+      obj.material = createMaterial(type, MATERIAL_PARAMS.treeLeaf());
+    }
+  });
+
+  // OVNI
+  if (ovni) {
+    ovni.traverse(obj => {
+      if (obj.isMesh && obj.geometry === GEOMETRY.ovniBody) {
+        obj.material = createMaterial(type, MATERIAL_PARAMS.ovniBody());
+      }
+      if (obj.isMesh && obj.geometry === GEOMETRY.ovniCockpit) {
+        obj.material = createMaterial(type, MATERIAL_PARAMS.ovniCockpit());
+      }
+      if (obj.isMesh && obj.geometry === GEOMETRY.ovniSpotlight) {
+        obj.material = createMaterial(type, MATERIAL_PARAMS.ovniSpotlight());
+      }
+      if (obj.isMesh && obj.geometry === GEOMETRY.ovniSphere) {
+        obj.material = createMaterial(type, MATERIAL_PARAMS.ovniSphere());
+      }
+    });
   }
 }
 

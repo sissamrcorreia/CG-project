@@ -1,8 +1,7 @@
-
 * [X] Create a Three.js application for a rural landscape scene with an alien spaceship
 * [X] Generate procedural textures for a floral field and a terrain
 * [ ] Model a typically Alentejano house using geometric primitives (cubes, cylinders, etc.) and polygon meshes
-* [ ] Model a tree using geometric primitives and polygon meshes
+* [X] Model a tree using geometric primitives and polygon meshes
 * [X] Model an Alentejano montado landscape using geometric primitives and polygon meshes
 * [ ] Apply textures to all scene objects that react to lighting
 * [ ] Implement a UFO orbiting the scene with:

@@ -48,10 +48,10 @@ const MATERIAL_PARAMS = {
   ovniSpotlight: () => ({ color: COLORS.lightCyan, emissive: COLORS.darkBlue }),
   ovniSphere: () => ({ color: COLORS.lightCyan, emissive: COLORS.darkBlue }),
   
-  houseWalls: () => ({ color: COLORS.white }),
-  houseRoof: () => ({ color: COLORS.orange }),
-  houseWindows: () => ({ color: COLORS.lightBlue }),
-  houseDoor: () => ({ color: COLORS.blue }),
+  houseWalls: () => ({ color: COLORS.white, side: THREE.DoubleSide }),
+  houseRoof: () => ({ color: COLORS.orange, side: THREE.DoubleSide }),
+  houseWindows: () => ({ color: COLORS.lightBlue, side: THREE.DoubleSide }),
+  houseDoor: () => ({ color: COLORS.blue, side: THREE.DoubleSide }),
 };
 
 const LIGHT_INTENSITY = Object.freeze({
@@ -254,63 +254,6 @@ function createOakTree(trunkHeight, position, rotation) {
 }
 
 function createOvni(initialPosition) {
-  // ovni = new THREE.Group();
-  // ovni.position.copy(initialPosition);
-  // rootGroup.add(ovni);
-
-  // const body = new THREE.Mesh(GEOMETRY.ovniBody, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniBody()));
-  // body.scale.copy(ELLIPSOID_SCALING.ovniBody);
-  // const cockpit = new THREE.Mesh(GEOMETRY.ovniCockpit, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniCockpit()));
-  // cockpit.position.set(0, ELLIPSOID_SCALING.ovniBody.y / 2, 0);
-  // const spotlightMesh = new THREE.Mesh(GEOMETRY.ovniSpotlight, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniSpotlight()));
-  // spotlightMesh.position.set(0, -ELLIPSOID_SCALING.ovniBody.y, 0);
-
-  // // Create spotlight
-  // spotlight = new THREE.SpotLight(COLORS.lightCyan, 1, 50, Math.PI / 6, 0.5);
-  // spotlight.position.set(0, -ELLIPSOID_SCALING.ovniBody.y, 0);
-  
-  // const spotlightTarget = new THREE.Object3D();
-  // spotlightTarget.position.set(0, -10, 0); // Point downward
-  // ovni.add(spotlight, spotlight.target);
-
-  // ovniSpotlight = new THREE.SpotLight(
-  //   COLORS.darkBlue,
-  //   LIGHT_INTENSITY.ovni,
-  //   0,
-  //   OVNI_SPOTLIGHT_ANGLE,
-  //   OVNI_SPOTLIGHT_PENUMBRA
-  // );
-  // ovniSpotlight.position.copy(spotlight.position);
-  // ovniSpotlight.target = spotlightTarget;
-  // ovni.add(ovniSpotlight);
-
-  // ovni.add(body, cockpit, spotlightMesh);
-
-  // // Create small spheres with point lights
-  // for (let i = 0; i < OVNI_SPHERE_COUNT; i++) {
-  //   const sphereGroup = new THREE.Group();
-  //   sphereGroup.rotation.set(0, (i * 2 * Math.PI) / OVNI_SPHERE_COUNT, 0);
-  //   ovni.add(sphereGroup);
-    
-  //   const sphere = new THREE.Mesh(GEOMETRY.ovniSphere, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniSphere()));
-  //   const sphereY = -ELLIPSOID_SCALING.ovniBody.y / 2;
-  //   const sphereX = Math.sqrt(
-  //     ELLIPSOID_SCALING.ovniBody.x ** 2 * (1 - sphereY ** 2 / ELLIPSOID_SCALING.ovniBody.y ** 2)
-  //   );
-    
-  //   sphere.position.set(sphereX, sphereY, 0);
-    
-  //   // Add point light
-  //   const pointLight = new THREE.PointLight(
-  //     COLORS.darkBlue,
-  //     LIGHT_INTENSITY.ovniSphere,
-  //     OVNI_SPHERE_LIGHT_DISTANCE
-  //   );
-  //   pointLight.position.set(sphereX, sphereY, 0);
-  //   sphereGroup.add(sphere, pointLight);
-  //   OVNI_SPHERE_LIGHTS.push(pointLight);
-  // }
-
   ovni = new THREE.Group();
   ovni.position.copy(initialPosition);
   rootGroup.add(ovni);
@@ -342,10 +285,13 @@ function createOvni(initialPosition) {
     );
     sphere.position.set(sphereX, sphereY, 0);
     // Add point light
-    const pointLight = new THREE.PointLight(COLORS.lightCyan, 1, 10);
+    const pointLight = new THREE.PointLight(COLORS.lightCyan, 5, 20);
     pointLight.position.set(sphereX, sphereY, 0);
     sphereGroup.add(sphere, pointLight);
     pointLights.push(pointLight);
+
+    // pointLights.forEach(light => scene.add(new THREE.PointLightHelper(light, 0.5)));
+    // scene.add(new THREE.SpotLightHelper(spotlight));
   }
 }
 
@@ -562,6 +508,8 @@ function init() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true; // Enable shadow mapping
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional: softer shadows
   document.body.appendChild(renderer.domElement);
 
   floralTexture = createFloralFieldTexture();
@@ -635,7 +583,7 @@ function onKeyDown(e) {
     case 'ArrowUp': keysPressed.ArrowUp = true; break;
     case 'ArrowDown': keysPressed.ArrowDown = true; break;
 
-    // d -> directional light TODO
+    // d -> directional light
     case 'd': case 'D':
       if (!keysPressed.d) {
         keysPressed.d = true;
@@ -654,8 +602,11 @@ function onKeyDown(e) {
     
     // s -> spotlight FIXME
     case 's': case 'S':
+      console.log('Spotlight toggled');
       isSpotlightOn = !isSpotlightOn;
       spotlight.visible = isSpotlightOn;
+      console.log('Spotlight toggled:', isSpotlightOn);
+      break;
     
     // r -> lighting calculations TODO
     case 'r': case 'R':

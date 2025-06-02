@@ -10,7 +10,7 @@
   * [X] Multiple small spheres radially placed at the bottom
   * [X] A flattened cylinder at the center of the bottom
   * [ ] Point lights anchored to each small sphere, toggled with 'P' or 'p'
-  * [ ] Spotlight anchored to the cylinder, pointing downward, toggled with 'S' or 's'
+  * [X] Spotlight anchored to the cylinder, pointing downward, toggled with 'S' or 's'
   * [X] Constant angular rotation around its symmetry axis
   * [X] Horizontal movement controlled by arrow keys (up, down, left, right), supporting simultaneous key presses
 * [ ] Define three material types for each scene object:

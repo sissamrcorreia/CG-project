@@ -266,7 +266,7 @@ function createOvni(initialPosition) {
   spotlightMesh.position.set(0, -ELLIPSOID_SCALING.ovniBody.y, 0);
 
   // Create spotlight
-  spotlight = new THREE.SpotLight(COLORS.lightCyan, 1, 50, Math.PI / 6, 0.5);
+  spotlight = new THREE.SpotLight(COLORS.lightCyan, 30, 50, Math.PI / 6, 0.5, 1.7);
   spotlight.position.set(0, -ELLIPSOID_SCALING.ovniBody.y, 0);
   spotlight.target.position.set(0, -ELLIPSOID_SCALING.ovniBody.y - 1, 0); // Point downward
   ovni.add(spotlight, spotlight.target);

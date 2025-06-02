@@ -474,10 +474,10 @@ function update(delta) {
 
   // Move ovni based on key presses
   const direction = new THREE.Vector3();
-  if (keysPressed.ArrowLeft) direction.x -= 1;
-  if (keysPressed.ArrowRight) direction.x += 1;
-  if (keysPressed.ArrowUp) direction.z -= 1;
-  if (keysPressed.ArrowDown) direction.z += 1;
+  if (keysPressed.ArrowLeft) direction.x += 1;
+  if (keysPressed.ArrowRight) direction.x -= 1;
+  if (keysPressed.ArrowUp) direction.z += 1;
+  if (keysPressed.ArrowDown) direction.z -= 1;
 
   if (direction.lengthSq() > 0) {
     direction.normalize();

@@ -123,7 +123,7 @@ const CLOCK = new THREE.Clock();
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
-let renderer, scene, camera, rootGroup, terrainHeightMap;
+let renderer, scene, activecamera, perspectivecamera, vrcamera, rootGroup, terrainHeightMap;
 let terrain, skyDome; // Store references to terrain and sky dome meshes
 let floralTexture, starrySkyTexture; // Store the canvas textures
 let isFloralFieldActive = false;
@@ -435,12 +435,16 @@ function createStarrySkyTexture() {
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
-function createCamera() {
-  camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.set(-32, 40, -50);
-  camera.lookAt(0, 0, 0);
+function createCameras() {
+  perspectivecamera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 1, 1000);
+  perspectivecamera.position.set(-32, 40, -50);
+  perspectivecamera.lookAt(0, 0, 0);
 
-  const controls = new OrbitControls(camera, renderer.domElement);
+  vrcamera = new THREE.StereoCamera();  
+
+
+  activecamera = perspectivecamera; // Default active camera
+  const controls = new OrbitControls(activecamera, renderer.domElement);
   controls.target.set(0, 0, 0);
   controls.update();
 }
@@ -498,7 +502,7 @@ function update(delta) {
 /* DISPLAY */
 /////////////
 function render() {
-  renderer.render(scene, camera);
+  renderer.render(scene, activecamera);
 }
 
 ////////////////////////////////
@@ -510,6 +514,7 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true; // Enable shadow mapping
   renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional: softer shadows
+  renderer.xr.enabled = true; // Enable WebXR for VR support
   document.body.appendChild(renderer.domElement);
 
   floralTexture = createFloralFieldTexture();
@@ -519,7 +524,7 @@ function init() {
   terrainHeightMap = loader.load(TERRAIN_HEIGHT_MAP_PATH);
 
   createScene();
-  createCamera();
+  createCameras();
 
   window.addEventListener('resize', onResize);
   window.addEventListener('keydown', onKeyDown);
@@ -540,8 +545,8 @@ function animate() {
 /* RESIZE WINDOW CALLBACK */
 ////////////////////////////
 function onResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+  activecamera.aspect = window.innerWidth / window.innerHeight;
+  activecamera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
@@ -574,7 +579,14 @@ function onKeyDown(e) {
     
     // 7 -> camera prespetiva
     case '7':
-      // TODO
+      if (activecamera !== perspectivecamera) {
+        activecamera = perspectivecamera;
+        console.log('Switched to perspective camera');
+      }
+      else {
+        activecamera = vrcamera;
+        console.log('Switched to VR camera');
+      }
       break;
     
     // ovni movement

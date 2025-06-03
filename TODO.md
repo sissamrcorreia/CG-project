@@ -4,12 +4,12 @@
 * [X] Model a tree using geometric primitives and polygon meshes
 * [X] Model an Alentejano montado landscape using geometric primitives and polygon meshes
 * [ ] Apply textures to all scene objects that react to lighting
-* [ ] Implement a UFO orbiting the scene with:
+* [X] Implement a UFO orbiting the scene with:
   * [X] A flattened sphere for the UFO body
   * [X] A spherical cap for the cockpit
   * [X] Multiple small spheres radially placed at the bottom
   * [X] A flattened cylinder at the center of the bottom
-  * [ ] Point lights anchored to each small sphere, toggled with 'P' or 'p'
+  * [X] Point lights anchored to each small sphere, toggled with 'P' or 'p'
   * [X] Spotlight anchored to the cylinder, pointing downward, toggled with 'S' or 's'
   * [X] Constant angular rotation around its symmetry axis
   * [X] Horizontal movement controlled by arrow keys (up, down, left, right), supporting simultaneous key presses

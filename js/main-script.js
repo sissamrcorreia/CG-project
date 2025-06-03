@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-// import { VRButton } from "three/addons/webxr/VRButton.js";
+import { VRButton } from "three/addons/webxr/VRButton.js";
 // import * as Stats from "three/addons/libs/stats.module.js";
 // import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
@@ -141,8 +141,24 @@ let requestedMaterial = 'phong';
 const keysPressed = {
   _1: false,
   _2: false,
+  _7: false,
   d: false,
   p: false,
+  s: false,
+  r: false,
+  q: false,
+  w: false,
+  e: false,
+  _1_prev: false,
+  _2_prev: false,
+  _7_prev: false,
+  d_prev: false,
+  p_prev: false,
+  s_prev: false,
+  r_prev: false,
+  q_prev: false,
+  w_prev: false,
+  e_prev: false,
   ArrowLeft: false,
   ArrowRight: false,
   ArrowUp: false,
@@ -289,30 +305,44 @@ function createOvni(initialPosition) {
     pointLight.position.set(sphereX, sphereY, 0);
     sphereGroup.add(sphere, pointLight);
     pointLights.push(pointLight);
-
-    // pointLights.forEach(light => scene.add(new THREE.PointLightHelper(light, 0.5)));
-    // scene.add(new THREE.SpotLightHelper(spotlight));
   }
 }
 
 function createHouseWallsGeometry() {
   const geometry = new THREE.BufferGeometry();
   const vertices = new Float32Array([
-    0, 0, 0, 1, 2.5, 0, 0, 2.5, 0, 1, 0, 0, 2.5, 0, 0, 2.5, 1, 0, 0, 1, 0, 4.5, 0, 0, 4.5, 2.5, 0,
+    // front wall
+    0, 0, 0, 1, 2.5, 0, 0, 2.5, 0, 1, 0, 0, 2.5, 0, 0, 2.5, 1, 0, 1, 1, 0, 4.5, 0, 0, 4.5, 2.5, 0,
     2.5, 2.5, 0, 6, 0, 0, 6, 1, 0, 4.5, 1, 0, 8, 0, 0, 8, 2.5, 0, 6, 2.5, 0, 9.25, 0, 0, 9.25, 2.5, 0,
     11.5, 0, 0, 11.5, 2.5, 0, 13, 0, 0, 13, 1, 0, 11.5, 1, 0, 17, 0, 0, 17, 2.5, 0, 13, 2.5, 0, 18.5, 0, 0,
     18.5, 1, 0, 17, 1, 0, 20, 0, 0, 20, 2.5, 0, 18.5, 2.5, 0, 8, 4, 0, 0, 4, 0, 13, 4, 0, 20, 4, 0,
+    
+    // right wall
     20, 0, -3.5, 20, 2.5, -3.5, 20, 0, -5, 20, 1, -5, 20, 1, -3.5, 20, 0, -5.5, 20, 2.5, -5.5,
-    20, 2.5, -5, 20, 4, -5.5, 0, 0, -5.5, 0, 4, -5.5, 0, 0, 0, 20, 0, 0, 20, 2.5, 0, 0, 4, 0,
+    20, 2.5, -5, 20, 4, -5.5,
+    
+    // left wall
+    0, 0, -5.5, 0, 4, -5.5,
+    
+    // extras
+    0, 0, 0, 20, 0, 0, 20, 2.5, 0, 0, 4, 0,
     20, 4, 0, 20, 0, -5.5, 20, 4, -5.5, 0, 0, -5.5, 0, 4, -5.5
   ]);
   const indices = [
+    // front wall
     0, 1, 2, 0, 3, 1, 3, 4, 5, 3, 5, 6, 4, 7, 8, 4, 8, 9, 7, 10, 11, 7, 11, 12, 10, 13, 14,
     10, 14, 15, 16, 18, 19, 16, 19, 17, 18, 20, 21, 18, 21, 22, 20, 23, 24, 20, 24, 25,
     23, 26, 27, 23, 27, 28, 26, 29, 30, 26, 30, 31, 2, 14, 32, 2, 32, 33, 14, 25, 34,
-    14, 34, 32, 25, 30, 35, 25, 35, 34, 47, 36, 37, 47, 37, 49, 36, 38, 39, 36, 39, 40,
-    38, 41, 42, 38, 42, 43, 49, 42, 44, 49, 44, 51, 45, 47, 50, 45, 50, 46, 52, 54, 55,
-    52, 55, 53
+    14, 34, 32, 25, 30, 35, 25, 35, 34,
+    
+    // right wall
+    48, 36, 37, 48, 37, 49, 36, 38, 39, 36, 39, 40, 38, 41, 42, 38, 42, 43, 49, 42, 44, 49, 44, 51,
+
+    // left wall
+    45, 47, 50, 45, 50, 46,
+
+    // back wall
+    52, 54, 55, 52, 55, 53
   ];
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
   geometry.setIndex(indices);
@@ -338,12 +368,33 @@ function createHouseRoofGeometry() {
 function createHouseWindowsGeometry() {
   const geometry = new THREE.BufferGeometry();
   const vertices = new Float32Array([
-    1, 1, 0, 2.5, 1, 0, 2.5, 2.5, 0, 1, 2.5, 0, 4.5, 1, 0, 6, 1, 0, 6, 2.5, 0, 4.5, 2.5, 0,
-    11.5, 1, 0, 13, 1, 0, 13, 2.5, 0, 11.5, 2.5, 0, 17, 1, 0, 18.5, 1, 0, 18.5, 2.5, 0,
-    17, 2.5, 0, 20, 1, -3.5, 20, 1, -5, 20, 2.5, -5, 20, 2.5, -3.5
+    // window 1
+    1, 1, 0, 2.5, 1, 0, 2.5, 2.5, 0, 1, 2.5, 0,
+    
+    // window 2
+    4.5, 1, 0, 6, 1, 0, 6, 2.5, 0, 4.5, 2.5, 0,
+    11.5, 1, 0, 13, 1, 0, 13, 2.5, 0, 11.5, 2.5,
+    
+    // window 3
+    0, 17, 1, 0, 18.5, 1, 0, 18.5, 2.5, 0, 17, 2.5, 0,
+    
+    // side window
+    20, 1, -3.5, 20, 1, -5, 20, 2.5, -5, 20, 2.5, -3.5
   ]);
   const indices = [
-    0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15,
+    // window 1
+    0, 1, 2, 0, 2, 3,
+    
+    // window 2
+    4, 5, 6, 4, 6, 7,
+    
+    // window 3
+    8, 9, 10, 8, 10, 11,
+    
+    // window 4
+    12, 13, 14, 12, 14, 15,
+    
+    // side window
     16, 17, 18, 16, 18, 19
   ];
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -440,8 +491,7 @@ function createCameras() {
   perspectivecamera.position.set(-32, 40, -50);
   perspectivecamera.lookAt(0, 0, 0);
 
-  vrcamera = new THREE.StereoCamera();  
-
+  vrcamera = new THREE.StereoCamera();
 
   activecamera = perspectivecamera; // Default active camera
   const controls = new OrbitControls(activecamera, renderer.domElement);
@@ -492,10 +542,83 @@ function update(delta) {
     }
   }
 
+  // Toggle floral field texture (key 1)
+  if (keysPressed._1 && !keysPressed._1_prev) {
+    isFloralFieldActive = !isFloralFieldActive;
+    terrain.material.map = isFloralFieldActive ? floralTexture : null;
+    terrain.material.needsUpdate = true;
+  }
+
+  // Toggle starry sky texture (key 2)
+  if (keysPressed._2 && !keysPressed._2_prev) {
+    isStarrySkyActive = !isStarrySkyActive;
+    skyDome.material.map = isStarrySkyActive ? starrySkyTexture : null;
+    skyDome.material.color.set(isStarrySkyActive ? COLORS.white : COLORS.darkBlue);
+    skyDome.material.needsUpdate = true;
+  }
+
+  // Toggle camera (key 7)
+  if (keysPressed._7 && !keysPressed._7_prev) {
+    if (activecamera !== perspectivecamera) {
+      activecamera = perspectivecamera;
+      console.log('Switched to perspective camera');
+    } else {
+      activecamera = vrcamera;
+      console.log('Switched to VR camera');
+    }
+  }
+
+  // Toggle directional light (key D)
+  if (keysPressed.d && !keysPressed.d_prev) {
+    moonLight.visible = !moonLight.visible;
+  }
+
+  // Toggle point lights (key P)
+  if (keysPressed.p && !keysPressed.p_prev) {
+    isPointLightsOn = !isPointLightsOn;
+    pointLights.forEach(light => (light.visible = isPointLightsOn));
+  }
+
+  // Toggle spotlight (key S)
+  if (keysPressed.s && !keysPressed.s_prev) {
+    isSpotlightOn = !isSpotlightOn;
+    spotlight.visible = isSpotlightOn;
+  }
+
+  // Switch to Gouraud shading (key Q)
+  if (keysPressed.q && !keysPressed.q_prev) {
+    requestedMaterial = 'gouraud';
+    console.log('Switching to Gouraud shading');
+  }
+
+  // Switch to Phong shading (key W)
+  if (keysPressed.w && !keysPressed.w_prev) {
+    requestedMaterial = 'phong';
+    console.log('Switching to Phong shading');
+  }
+
+  // Switch to Lambert shading (key E)
+  if (keysPressed.e && !keysPressed.e_prev) {
+    requestedMaterial = 'lambert';
+    console.log('Switching to Lambert shading');
+  }
+
+  // Update materials if requested
   if (activeMaterial !== requestedMaterial) {
     activeMaterial = requestedMaterial;
     updateAllMaterials(activeMaterial);
   }
+
+  // Update previous key states
+  keysPressed._1_prev = keysPressed._1;
+  keysPressed._2_prev = keysPressed._2;
+  keysPressed._7_prev = keysPressed._7;
+  keysPressed.d_prev = keysPressed.d;
+  keysPressed.p_prev = keysPressed.p;
+  keysPressed.s_prev = keysPressed.s;
+  keysPressed.q_prev = keysPressed.q;
+  keysPressed.w_prev = keysPressed.w;
+  keysPressed.e_prev = keysPressed.e;
 }
 
 /////////////
@@ -514,8 +637,9 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true; // Enable shadow mapping
   renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional: softer shadows
-  renderer.xr.enabled = true; // Enable WebXR for VR support
   document.body.appendChild(renderer.domElement);
+  document.body.appendChild( VRButton.createButton( renderer ) );
+  renderer.xr.enabled = true; // Enable WebXR for VR support
 
   floralTexture = createFloralFieldTexture();
   starrySkyTexture = createStarrySkyTexture();
@@ -537,8 +661,10 @@ function init() {
 function animate() {
   const delta = 1 / 60;
   requestAnimationFrame(animate);
-  update(delta);
-  render();
+  // renderer.setAnimationLoop( function () {
+    // });
+    update(delta);
+    render(); 
 }
 
 ////////////////////////////
@@ -556,39 +682,14 @@ function onResize() {
 function onKeyDown(e) {
   switch (e.key) {
     // 1 -> campo floral
-    case '1':
-      if (!keysPressed._1) {
-        keysPressed._1 = true;
-        isFloralFieldActive = !isFloralFieldActive;
-        terrain.material.map = isFloralFieldActive ? floralTexture : null;
-        //terrain.material.color.set(COLORS.green);
-        terrain.material.needsUpdate = true;
-      }
-      break;
+    case '1': keysPressed._1 = true; break;
 
     // 2 -> céu estrelado
-    case '2':
-      if (!keysPressed._2) {
-        keysPressed._2 = true;
-        isStarrySkyActive = !isStarrySkyActive;
-        skyDome.material.map = isStarrySkyActive ? starrySkyTexture : null;
-        skyDome.material.color.set(isStarrySkyActive ? COLORS.white : COLORS.darkBlue);
-        skyDome.material.needsUpdate = true;
-      }
-      break;
-    
+    case '2': keysPressed._2 = true; break;
+
     // 7 -> camera prespetiva
-    case '7':
-      if (activecamera !== perspectivecamera) {
-        activecamera = perspectivecamera;
-        console.log('Switched to perspective camera');
-      }
-      else {
-        activecamera = vrcamera;
-        console.log('Switched to VR camera');
-      }
-      break;
-    
+    case '7': keysPressed._7 = true; break;
+
     // ovni movement
     case 'ArrowLeft': keysPressed.ArrowLeft = true; break;
     case 'ArrowRight': keysPressed.ArrowRight = true; break;
@@ -596,51 +697,25 @@ function onKeyDown(e) {
     case 'ArrowDown': keysPressed.ArrowDown = true; break;
 
     // d -> directional light
-    case 'd': case 'D':
-      if (!keysPressed.d) {
-        keysPressed.d = true;
-        moonLight.visible = !moonLight.visible;
-      }
-    break;
-    
-    // p -> point lights FIXME
-    case 'p': case 'P':
-      if (!keysPressed.p) {
-        keysPressed.p = true;
-        isPointLightsOn = !isPointLightsOn;
-        pointLights.forEach(light => light.visible = isPointLightsOn);
-      }
-      break;
-    
+    case 'd': case 'D': keysPressed.d = true; break;
+
+    // p -> point lights
+    case 'p': case 'P': keysPressed.p = true; break;
+
     // s -> spotlight FIXME
-    case 's': case 'S':
-      console.log('Spotlight toggled');
-      isSpotlightOn = !isSpotlightOn;
-      spotlight.visible = isSpotlightOn;
-      console.log('Spotlight toggled:', isSpotlightOn);
-      break;
-    
+    case 's': case 'S': keysPressed.s = true; break;
+
     // r -> lighting calculations TODO
-    case 'r': case 'R':
-      break;
-    
+    case 'r': case 'R': keysPressed.r = true; break;
+
     // q -> Gouraud shading TODO
-    case 'q': case 'Q':
-      requestedMaterial = 'gouraud';
-      console.log('Switching to Gouraud shading');
-      break;
-    
+    case 'q': case 'Q': keysPressed.q = true; break;
+
     // w -> Phong shading TODO
-    case 'w': case 'W':
-      console.log('Switching to Phong shading');
-      requestedMaterial = 'phong';
-      break;
-    
+    case 'w': case 'W': keysPressed.w = true; break;
+
     // e -> Lambert shading TODO
-    case 'e': case 'E':
-      console.log('Switching to Lambert shading');
-      requestedMaterial = 'lambert';
-      break;
+    case 'e': case 'E': keysPressed.e = true; break;
   }
 }
 
@@ -651,28 +726,20 @@ function onKeyUp(e) {
   switch (e.key) {
     case '1': keysPressed._1 = false; break;
     case '2': keysPressed._2 = false; break;
-    
+    case '7': keysPressed._7 = false; break;
+
     case 'ArrowLeft': keysPressed.ArrowLeft = false; break;
     case 'ArrowRight': keysPressed.ArrowRight = false; break;
     case 'ArrowUp': keysPressed.ArrowUp = false; break;
     case 'ArrowDown': keysPressed.ArrowDown = false; break;
 
-    case 'd': case 'D':
-      keysPressed.d = false;
-      break;
-
-    case 'p': case 'P':
-      keysPressed.p = false;
-      break;
-    
-    case 'r': case 'R':
-      break;
-    case 'q': case 'Q':
-      break;
-    case 'w': case 'W':
-      break;
-    case 'e': case 'E':
-      break;
+    case 'd': case 'D': keysPressed.d = false; break;
+    case 'p': case 'P': keysPressed.p = false; break;
+    case 's': case 'S': keysPressed.s = false; break;
+    case 'r': case 'R': keysPressed.r = false; break;
+    case 'q': case 'Q': keysPressed.q = false; break;
+    case 'w': case 'W': keysPressed.w = false; break;
+    case 'e': case 'E': keysPressed.e = false; break;
   }
 }
 

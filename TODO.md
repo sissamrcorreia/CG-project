@@ -1,9 +1,9 @@
 * [X] Create a Three.js application for a rural landscape scene with an alien spaceship
 * [X] Generate procedural textures for a floral field and a terrain
-* [ ] Model a typically Alentejano house using geometric primitives (cubes, cylinders, etc.) and polygon meshes
+* [X] Model a typically Alentejano house using geometric primitives (cubes, cylinders, etc.) and polygon meshes
 * [X] Model a tree using geometric primitives and polygon meshes
 * [X] Model an Alentejano montado landscape using geometric primitives and polygon meshes
-* [ ] Apply textures to all scene objects that react to lighting
+* [X] Apply textures to all scene objects that react to lighting
 * [X] Implement a UFO orbiting the scene with:
   * [X] A flattened sphere for the UFO body
   * [X] A spherical cap for the cockpit
@@ -17,7 +17,7 @@
   * [X] MeshLambertMaterial (Gouraud shading), toggled with 'Q' or 'q'
   * [X] MeshPhongMaterial (Phong shading), toggled with 'W' or 'w'
   * [X] MeshToonMaterial (Cartoon shading), toggled with 'E' or 'e'
-  * [ ] Toggle lighting calculations with 'R' or 'r'
+  * [X] Toggle lighting calculations with 'R' or 'r'
 * [ ] Implement a fixed perspective camera with a view of the entire scene, selectable with '7'
 * [ ] Add a THREE.StereoCamera for VR support, following Three.js VR documentation
 * [X] Handle window resize events appropriately

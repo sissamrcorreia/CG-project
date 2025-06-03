@@ -49,9 +49,9 @@ const MATERIAL_PARAMS = {
   ovniSphere: () => ({ color: COLORS.lightCyan, emissive: COLORS.darkBlue }),
   
   houseWalls: () => ({ color: COLORS.white, side: THREE.DoubleSide }),
-  houseRoof: () => ({ color: COLORS.orange, side: THREE.DoubleSide }),
   houseWindows: () => ({ color: COLORS.lightBlue, side: THREE.DoubleSide }),
   houseDoor: () => ({ color: COLORS.blue, side: THREE.DoubleSide }),
+  houseRoof: () => ({ color: COLORS.orange, side: THREE.DoubleSide }),
 };
 
 const LIGHT_INTENSITY = Object.freeze({
@@ -60,10 +60,6 @@ const LIGHT_INTENSITY = Object.freeze({
   ovniSpotlight: 3,
   ovniSphere: 1,
 });
-
-const OVNI_SPOTLIGHT_ANGLE = Math.PI / 9;
-const OVNI_SPOTLIGHT_PENUMBRA = 0.3;
-const OVNI_SPHERE_LIGHT_DISTANCE = 10;
 
 const TERRAIN_HEIGHT_MAP_PATH = 'assets/height_map.png';
 
@@ -102,13 +98,12 @@ const GEOMETRY = {
   ovniSphere: new THREE.SphereGeometry(0.25, SPHERE_SEGMENTS, SPHERE_SEGMENTS),
   
   houseWalls: createHouseWallsGeometry(),
-  houseRoof: createHouseRoofGeometry(),
   houseWindows: createHouseWindowsGeometry(),
   houseDoor: createHouseDoorGeometry(),
+  houseRoof: createHouseRoofGeometry(),
 };
 
 const OVNI_SPHERE_COUNT = 8;
-const OVNI_SPHERE_LIGHTS = [];
 
 const ELLIPSOID_SCALING = {
   treePrimaryBranchLeaf: new THREE.Vector3(2.3, 1.1, 1.5),
@@ -118,8 +113,6 @@ const ELLIPSOID_SCALING = {
 const OVNI_ANGULAR_SPEED = Math.PI / 2; // Radians per second
 const OVNI_LINEAR_SPEED = 20; // Units per second
 
-const CLOCK = new THREE.Clock();
-
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
@@ -128,41 +121,28 @@ let terrain, skyDome; // Store references to terrain and sky dome meshes
 let floralTexture, starrySkyTexture; // Store the canvas textures
 let isFloralFieldActive = false;
 let isStarrySkyActive = false;
+
 let moonLight;
-let ovni, ovniSpotlight;
+let ovni;
 let pointLights = [];
 let spotlight;
+
+// Flags for light states
 let isPointLightsOn = true;
 let isSpotlightOn = true;
+let isLightCalculationsEnabled = true;
 
 let activeMaterial = 'phong'; // Default material
 let requestedMaterial = 'phong';
 
 const keysPressed = {
-  _1: false,
-  _2: false,
-  _7: false,
-  d: false,
-  p: false,
-  s: false,
-  r: false,
-  q: false,
-  w: false,
-  e: false,
-  _1_prev: false,
-  _2_prev: false,
-  _7_prev: false,
-  d_prev: false,
-  p_prev: false,
-  s_prev: false,
-  r_prev: false,
-  q_prev: false,
-  w_prev: false,
-  e_prev: false,
-  ArrowLeft: false,
-  ArrowRight: false,
-  ArrowUp: false,
-  ArrowDown: false
+  _1: false, _2: false, _7: false,
+  d: false, p: false, s: false,
+  r: false, q: false, w: false, e: false,
+  _1_prev: false, _2_prev: false, _7_prev: false,
+  d_prev: false, p_prev: false, s_prev: false,
+  r_prev: false, q_prev: false, w_prev: false, e_prev: false,
+  ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false
 };
 
 /////////////////////
@@ -616,6 +596,13 @@ function update(delta) {
     requestedMaterial = 'cartoon';
   }
 
+  // Switch light calculations (key R)
+  if (keysPressed.r && !keysPressed.r_prev) {
+    const materialType = activeMaterial === 'basic' ? 'phong' : 'basic';
+    requestedMaterial = materialType;
+    isLightCalculationsEnabled = !isLightCalculationsEnabled;
+  }
+
   // Update materials if requested
   if (activeMaterial !== requestedMaterial) {
     activeMaterial = requestedMaterial;
@@ -632,6 +619,7 @@ function update(delta) {
   keysPressed.q_prev = keysPressed.q;
   keysPressed.w_prev = keysPressed.w;
   keysPressed.e_prev = keysPressed.e;
+  keysPressed.r_prev = keysPressed.r;
 }
 
 /////////////
@@ -651,7 +639,7 @@ function init() {
   renderer.shadowMap.enabled = true; // Enable shadow mapping
   renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional: softer shadows
   document.body.appendChild(renderer.domElement);
-  document.body.appendChild( VRButton.createButton( renderer ) );
+  document.body.appendChild(VRButton.createButton(renderer));
   renderer.xr.enabled = true; // Enable WebXR for VR support
 
   floralTexture = createFloralFieldTexture();
@@ -762,6 +750,7 @@ function createMaterial(type, params) {
     case 'gouraud': return new THREE.MeshLambertMaterial(params);
     case 'phong': return new THREE.MeshPhongMaterial(params);
     case 'cartoon': return new THREE.MeshToonMaterial(params);
+    case 'basic': return new THREE.MeshBasicMaterial(params);
     default: return new THREE.MeshPhongMaterial(params);
   }
 }

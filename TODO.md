@@ -13,10 +13,10 @@
   * [X] Spotlight anchored to the cylinder, pointing downward, toggled with 'S' or 's'
   * [X] Constant angular rotation around its symmetry axis
   * [X] Horizontal movement controlled by arrow keys (up, down, left, right), supporting simultaneous key presses
-* [ ] Define three material types for each scene object:
-  * [ ] MeshLambertMaterial (Gouraud shading), toggled with 'Q' or 'q'
-  * [ ] MeshPhongMaterial (Phong shading), toggled with 'W' or 'w'
-  * [ ] MeshToonMaterial (Cartoon shading), toggled with 'E' or 'e'
+* [X] Define three material types for each scene object:
+  * [X] MeshLambertMaterial (Gouraud shading), toggled with 'Q' or 'q'
+  * [X] MeshPhongMaterial (Phong shading), toggled with 'W' or 'w'
+  * [X] MeshToonMaterial (Cartoon shading), toggled with 'E' or 'e'
   * [ ] Toggle lighting calculations with 'R' or 'r'
 * [ ] Implement a fixed perspective camera with a view of the entire scene, selectable with '7'
 * [ ] Add a THREE.StereoCamera for VR support, following Three.js VR documentation

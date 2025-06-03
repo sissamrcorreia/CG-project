@@ -8,21 +8,21 @@ import { VRButton } from "three/addons/webxr/VRButton.js";
 /* GLOBAL CONSTANTS */
 //////////////////////
 const COLORS = Object.freeze({
-  darkBlue: new THREE.Color(0x00008b),
-  darkPurple: new THREE.Color(0x632cd4),
-  lilac: new THREE.Color(0xc8a2c8),
+  darkBlue: new THREE.Color(0x000099),
+  darkPurple: new THREE.Color(0x4b0082),
+  lilac: new THREE.Color(0xd8bfd8),
   green: new THREE.Color(0x55cc55),
   darkGreen: new THREE.Color(0x5e8c61),
-  red: new THREE.Color(0xf03a47),
-  skyBlue: new THREE.Color(0x84cae7),
-  lightCyan: new THREE.Color(0xc9e4e7),
-  brown: new THREE.Color(0xa96633),
-  orange: new THREE.Color(0xea924b),
-  lightBlue: new THREE.Color(0xb8e9ee),
-  blue: new THREE.Color(0x1e90ff),
-  white: new THREE.Color(0xffffff),
-  yellow: new THREE.Color(0xffff00),
-  moonYellow: new THREE.Color(0xebc815),
+  red: new THREE.Color(0xe63946),
+  skyBlue: new THREE.Color(0x87ceeb),
+  lightCyan: new THREE.Color(0xb0e0e6),
+  brown: new THREE.Color(0x8b5a2b),
+  orange: new THREE.Color(0xffa500),
+  lightBlue: new THREE.Color(0xadd8e6),
+  blue: new THREE.Color(0x4682b4),
+  white: new THREE.Color(0xf5f5f5),
+  yellow: new THREE.Color(0xffd700),
+  moonYellow: new THREE.Color(0xf0c05a),
 });
 
 const MATERIAL_PARAMS = {
@@ -178,9 +178,7 @@ function createScene() {
   createSkyDome();
   createMoon();
   createHouse();
-  //createOakTree(3, new THREE.Vector3(24, 2.25, 34), new THREE.Euler(0, 0, 0));
   createOakTree(1.5, new THREE.Vector3(-28, 2.75, 17), new THREE.Euler(0, Math.PI / 2, 0));
-  //createOakTree(4, new THREE.Vector3(-41, 2.75, -14), new THREE.Euler(0, Math.PI / 6, 0));
   createOakTree(4, new THREE.Vector3(-14, 2.25, -23), new THREE.Euler(0, -Math.PI / 2, 0));
   createOakTree(8, new THREE.Vector3(15, 2.75, -26), new THREE.Euler(0, Math.PI / 3, 0));
   createOvni(new THREE.Vector3(0, 20, 0));
@@ -189,7 +187,7 @@ function createScene() {
 }
 
 function createTerrain() {
-  const material = new THREE.MeshPhongMaterial(MATERIAL_PARAMS.terrain());
+  const material = createMaterial('phong', MATERIAL_PARAMS.terrain());
   terrain = new THREE.Mesh(GEOMETRY.terrain, material);
   terrain.rotateX(-Math.PI / 2);
   rootGroup.add(terrain);
@@ -202,7 +200,7 @@ function createSkyDome() {
 }
 
 function createMoon() {
-  const material = new THREE.MeshPhongMaterial(MATERIAL_PARAMS.moon());
+  const material = createMaterial('phong', MATERIAL_PARAMS.moon());
   const moon = new THREE.Mesh(GEOMETRY.moon, material);
   moon.position.copy(MOON_POSITION);
   rootGroup.add(moon);
@@ -214,10 +212,10 @@ function createHouse() {
   house.rotateY(Math.PI);
   rootGroup.add(house);
 
-  const walls = new THREE.Mesh(GEOMETRY.houseWalls, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.houseWalls()));
-  const roof = new THREE.Mesh(GEOMETRY.houseRoof, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.houseRoof()));
-  const windows = new THREE.Mesh(GEOMETRY.houseWindows, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.houseWindows()));
-  const door = new THREE.Mesh(GEOMETRY.houseDoor, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.houseDoor()));
+  const walls = new THREE.Mesh(GEOMETRY.houseWalls, createMaterial('phong', MATERIAL_PARAMS.houseWalls()));
+  const roof = new THREE.Mesh(GEOMETRY.houseRoof, createMaterial('phong', MATERIAL_PARAMS.houseRoof()));
+  const windows = new THREE.Mesh(GEOMETRY.houseWindows, createMaterial('phong', MATERIAL_PARAMS.houseWindows()));
+  const door = new THREE.Mesh(GEOMETRY.houseDoor, createMaterial('phong', MATERIAL_PARAMS.houseDoor()));
   house.add(walls, roof, windows, door);
 }
 
@@ -227,10 +225,15 @@ function createOakTree(trunkHeight, position, rotation) {
   treeGroup.rotation.copy(rotation);
   rootGroup.add(treeGroup);
 
-  const trunk = new THREE.Mesh(GEOMETRY.treeTrunk, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.treeTrunk()));
+  // Trunck
+  const trunk = new THREE.Mesh(GEOMETRY.treeTrunk, createMaterial('phong', MATERIAL_PARAMS.treeTrunk()));
   trunk.scale.setY(trunkHeight);
   trunk.position.setY(trunkHeight / 2);
-  const primaryBranch = new THREE.Mesh(GEOMETRY.treePrimaryBranch, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.treePrimaryBranch()));
+  
+  // Primary branch
+  const primaryBranch = new THREE.Mesh(GEOMETRY.treePrimaryBranch, createMaterial('phong', MATERIAL_PARAMS.treePrimaryBranch()));
+  
+  // Calculate position and rotation for primary branch
   const primaryBranchIncl = Math.PI / 6;
   const primaryBranchX =
     Math.sin(primaryBranchIncl) *
@@ -244,7 +247,11 @@ function createOakTree(trunkHeight, position, rotation) {
     GEOMETRY.treeTrunk.parameters.radiusTop;
   primaryBranch.position.set(primaryBranchX, trunkHeight + primaryBranchY, 0);
   primaryBranch.rotation.set(0, 0, -primaryBranchIncl);
-  const secondaryBranch = new THREE.Mesh(GEOMETRY.treeSecondaryBranch, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.treeSecondaryBranch()));
+  
+  // Secondary branch
+  const secondaryBranch = new THREE.Mesh(GEOMETRY.treeSecondaryBranch, createMaterial('phong', MATERIAL_PARAMS.treeSecondaryBranch()));
+  
+  // Calculate position and rotation for secondary branch
   const secondaryBranchIncl = Math.PI / 3;
   secondaryBranch.position.set(
     -GEOMETRY.treeSecondaryBranch.parameters.height / 4,
@@ -252,14 +259,16 @@ function createOakTree(trunkHeight, position, rotation) {
     0
   );
   secondaryBranch.rotation.set(0, 0, secondaryBranchIncl);
-  const primaryBranchLeaf = new THREE.Mesh(GEOMETRY.treeLeaf, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.treeLeaf()));
+  
+  // Leaves
+  const primaryBranchLeaf = new THREE.Mesh(GEOMETRY.treeLeaf, createMaterial('phong', MATERIAL_PARAMS.treeLeaf()));
   primaryBranchLeaf.position.set(
     primaryBranchX * 2,
     trunkHeight + primaryBranchY * 2 + ELLIPSOID_SCALING.treePrimaryBranchLeaf.y / 2,
     0
   );
   primaryBranchLeaf.scale.copy(ELLIPSOID_SCALING.treePrimaryBranchLeaf);
-  const secondaryBranchLeaf = new THREE.Mesh(GEOMETRY.treeLeaf, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.treeLeaf()));
+  const secondaryBranchLeaf = new THREE.Mesh(GEOMETRY.treeLeaf, createMaterial('phong', MATERIAL_PARAMS.treeLeaf()));
   secondaryBranchLeaf.position.set(
     (-GEOMETRY.treeSecondaryBranch.parameters.height * 2) / 3,
     trunkHeight + primaryBranchY * 2 + ELLIPSOID_SCALING.treePrimaryBranchLeaf.y / 2,
@@ -274,11 +283,11 @@ function createOvni(initialPosition) {
   ovni.position.copy(initialPosition);
   rootGroup.add(ovni);
 
-  const body = new THREE.Mesh(GEOMETRY.ovniBody, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniBody()));
+  const body = new THREE.Mesh(GEOMETRY.ovniBody, createMaterial('phong', MATERIAL_PARAMS.ovniBody()));
   body.scale.copy(ELLIPSOID_SCALING.ovniBody);
-  const cockpit = new THREE.Mesh(GEOMETRY.ovniCockpit, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniCockpit()));
+  const cockpit = new THREE.Mesh(GEOMETRY.ovniCockpit, createMaterial('phong', MATERIAL_PARAMS.ovniCockpit()));
   cockpit.position.set(0, ELLIPSOID_SCALING.ovniBody.y / 2, 0);
-  const spotlightMesh = new THREE.Mesh(GEOMETRY.ovniSpotlight, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniSpotlight()));
+  const spotlightMesh = new THREE.Mesh(GEOMETRY.ovniSpotlight, createMaterial('phong', MATERIAL_PARAMS.ovniSpotlight()));
   spotlightMesh.position.set(0, -ELLIPSOID_SCALING.ovniBody.y, 0);
 
   // Create spotlight
@@ -294,7 +303,7 @@ function createOvni(initialPosition) {
     const sphereGroup = new THREE.Group();
     sphereGroup.rotation.set(0, (i * 2 * Math.PI) / OVNI_SPHERE_COUNT, 0);
     ovni.add(sphereGroup);
-    const sphere = new THREE.Mesh(GEOMETRY.ovniSphere, new THREE.MeshPhongMaterial(MATERIAL_PARAMS.ovniSphere()));
+    const sphere = new THREE.Mesh(GEOMETRY.ovniSphere, createMaterial('phong', MATERIAL_PARAMS.ovniSphere()));
     const sphereY = -ELLIPSOID_SCALING.ovniBody.y / 2;
     const sphereX = Math.sqrt(
       ELLIPSOID_SCALING.ovniBody.x ** 2 * (1 - sphereY ** 2 / ELLIPSOID_SCALING.ovniBody.y ** 2)
@@ -353,8 +362,15 @@ function createHouseWallsGeometry() {
 function createHouseRoofGeometry() {
   const geometry = new THREE.BufferGeometry();
   const vertices = new Float32Array([
-    0, 4, 0, 0, 4, -5.5, 20, 4, 0, 20, 4, -5.5, 0, 6, -2.75, 20, 6, -2.75, 0, 4, 0,
-    0, 4, -5.5, 20, 4, 0, 20, 4, -5.5, 0, 6, -2.75, 0, 6, -2.75, 20, 6, -2.75, 20, 6, -2.75
+    // base
+    0, 4, 0, 0, 4, -5.5, 20, 4, 0, 20, 4, -5.5,
+    
+    // top
+    0, 6, -2.75, 20, 6, -2.75,
+    
+    // others
+    0, 4, 0, 0, 4, -5.5, 20, 4, 0, 20, 4, -5.5, 0, 6, -2.75,
+    0, 6, -2.75, 20, 6, -2.75, 20, 6, -2.75
   ]);
   const indices = [
     0, 2, 5, 0, 5, 4, 3, 1, 10, 3, 10, 12, 7, 6, 11, 8, 9, 13
@@ -438,7 +454,7 @@ function createFloralFieldTexture() {
   for (let i = 0; i < 500; i++) {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height;
-    const radius = 1 + Math.random() * 2; // Small circles (1-3 pixels)
+    const radius = 1 + Math.random() * 2; // Small circles
     const color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
 
     context.beginPath();
@@ -471,7 +487,7 @@ function createStarrySkyTexture() {
   for (let i = 0; i < 300; i++) {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height;
-    const radius = 0.5 + Math.random() * 1.5; // Very small stars (0.5-2 pixels)
+    const radius = 0.5 + Math.random() * 1.5; // Very small stars
     context.beginPath();
     context.arc(x, y, radius, 0, 2 * Math.PI);
     context.fill();
@@ -588,19 +604,16 @@ function update(delta) {
   // Switch to Gouraud shading (key Q)
   if (keysPressed.q && !keysPressed.q_prev) {
     requestedMaterial = 'gouraud';
-    console.log('Switching to Gouraud shading');
   }
 
   // Switch to Phong shading (key W)
   if (keysPressed.w && !keysPressed.w_prev) {
     requestedMaterial = 'phong';
-    console.log('Switching to Phong shading');
   }
 
-  // Switch to Lambert shading (key E)
+  // Switch to cartoon shading (key E)
   if (keysPressed.e && !keysPressed.e_prev) {
-    requestedMaterial = 'lambert';
-    console.log('Switching to Lambert shading');
+    requestedMaterial = 'cartoon';
   }
 
   // Update materials if requested
@@ -664,7 +677,7 @@ function animate() {
   // renderer.setAnimationLoop( function () {
     // });
     update(delta);
-    render(); 
+    render();
 }
 
 ////////////////////////////
@@ -736,6 +749,7 @@ function onKeyUp(e) {
     case 'd': case 'D': keysPressed.d = false; break;
     case 'p': case 'P': keysPressed.p = false; break;
     case 's': case 'S': keysPressed.s = false; break;
+
     case 'r': case 'R': keysPressed.r = false; break;
     case 'q': case 'Q': keysPressed.q = false; break;
     case 'w': case 'W': keysPressed.w = false; break;
@@ -745,15 +759,10 @@ function onKeyUp(e) {
 
 function createMaterial(type, params) {
   switch (type) {
-    case 'phong':
-      return new THREE.MeshPhongMaterial(params);
-    case 'lambert':
-      return new THREE.MeshLambertMaterial(params);
-    case 'gouraud':
-      // Gouraud shading is achieved with MeshLambertMaterial in three.js
-      return new THREE.MeshLambertMaterial(params);
-    default:
-      return new THREE.MeshPhongMaterial(params);
+    case 'gouraud': return new THREE.MeshLambertMaterial(params);
+    case 'phong': return new THREE.MeshPhongMaterial(params);
+    case 'cartoon': return new THREE.MeshToonMaterial(params);
+    default: return new THREE.MeshPhongMaterial(params);
   }
 }
 
@@ -798,7 +807,7 @@ function updateAllMaterials(type) {
     }
   });
 
-  // OVNI
+  // Ovni
   if (ovni) {
     ovni.traverse(obj => {
       if (obj.isMesh && obj.geometry === GEOMETRY.ovniBody) {

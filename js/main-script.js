@@ -467,15 +467,15 @@ function createStarrySkyTexture() {
   for (let i = 0; i < 300; i++) {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height;
-    const radius = 0.5 + Math.random() * 1.5; // Very small stars
+    const radius = 0.5 + Math.random() * 0.5; // Very small stars
     context.beginPath();
     context.arc(x, y, radius, 0, 2 * Math.PI);
     context.fill();
   }
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(2, 2);
+  texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.repeat.set(1, 1);
   return texture;
 }
 

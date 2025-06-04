@@ -636,11 +636,12 @@ function init() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.shadowMap.enabled = true; // Enable shadow mapping
   renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional: softer shadows
-  document.body.appendChild(renderer.domElement);
-  document.body.appendChild(VRButton.createButton(renderer));
   renderer.xr.enabled = true; // Enable WebXR for VR support
+  document.body.appendChild(VRButton.createButton(renderer));
+  document.body.appendChild(renderer.domElement);
 
   floralTexture = createFloralFieldTexture();
   starrySkyTexture = createStarrySkyTexture();

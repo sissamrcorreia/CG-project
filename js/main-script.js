@@ -489,7 +489,7 @@ function createCameras() {
 
   vrcamera = new THREE.StereoCamera();
 
-  activecamera = perspectivecamera; // Default active camera
+  activecamera = vrcamera; // Default active camera
   const controls = new OrbitControls(activecamera, renderer.domElement);
   controls.target.set(0, 0, 0);
   controls.update();

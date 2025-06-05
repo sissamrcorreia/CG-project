@@ -674,12 +674,17 @@ function init() {
 /* ANIMATION CYCLE */
 /////////////////////
 function animate() {
-  const delta = 1 / 60;
-  requestAnimationFrame(animate);
-  // renderer.setAnimationLoop( function () {
-    // });
+  // Use a proper delta time calculation
+  const clock = new THREE.Clock();
+  
+  function animationLoop() {
+    const delta = clock.getDelta();
     update(delta);
     render();
+  }
+  
+  // Use setAnimationLoop for VR compatibility
+  renderer.setAnimationLoop(animationLoop);
 }
 
 ////////////////////////////

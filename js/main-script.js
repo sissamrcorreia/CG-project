@@ -116,7 +116,7 @@ const OVNI_LINEAR_SPEED = 20; // Units per second
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
-let renderer, scene, activecamera, perspectivecamera, vrcamera, rootGroup, terrainHeightMap;
+let renderer, scene, activecamera, perspectivecamera, rootGroup, terrainHeightMap;
 let terrain, skyDome; // Store references to terrain and sky dome meshes
 let floralTexture, starrySkyTexture; // Store the canvas textures
 let isFloralFieldActive = true;
@@ -500,8 +500,6 @@ function createCameras() {
   perspectivecamera.position.set(-32, 40, -50);
   perspectivecamera.lookAt(0, 0, 0);
 
-  vrcamera = new THREE.StereoCamera();
-
   activecamera = perspectivecamera; // Default active camera
   const controls = new OrbitControls(activecamera, renderer.domElement);
   controls.target.set(0, 0, 0);
@@ -568,13 +566,7 @@ function update(delta) {
 
   // Toggle camera (key 7)
   if (keysPressed._7 && !keysPressed._7_prev) {
-    if (activecamera !== perspectivecamera) {
-      activecamera = perspectivecamera;
-      console.log('Switched to perspective camera');
-    } else {
-      activecamera = vrcamera;
-      console.log('Switched to VR camera');
-    }
+    // Key 7 logic here
   }
 
   // Toggle directional light (key D)

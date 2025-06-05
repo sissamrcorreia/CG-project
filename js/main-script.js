@@ -55,7 +55,7 @@ const MATERIAL_PARAMS = {
 };
 
 const LIGHT_INTENSITY = Object.freeze({
-  ambient: 10,
+  ambient: 3,
   directional: 1,
   ovniSpotlight: 500,
   ovniSphere: 2,
@@ -119,8 +119,8 @@ const OVNI_LINEAR_SPEED = 20; // Units per second
 let renderer, scene, activecamera, perspectivecamera, vrcamera, rootGroup, terrainHeightMap;
 let terrain, skyDome; // Store references to terrain and sky dome meshes
 let floralTexture, starrySkyTexture; // Store the canvas textures
-let isFloralFieldActive = false;
-let isStarrySkyActive = false;
+let isFloralFieldActive = true;
+let isStarrySkyActive = true;
 
 let moonLight;
 let ovni;
@@ -180,12 +180,15 @@ function createTerrain() {
   const material = createMaterial('phong', MATERIAL_PARAMS.terrain());
   terrain = new THREE.Mesh(GEOMETRY.terrain, material);
   terrain.rotateX(-Math.PI / 2);
+  terrain.material.map = floralTexture;
   rootGroup.add(terrain);
 }
 
 function createSkyDome() {
   const material = new THREE.MeshBasicMaterial(MATERIAL_PARAMS.skyDome());
   skyDome = new THREE.Mesh(GEOMETRY.skyDome, material);
+  skyDome.material.map = isStarrySkyActive ? starrySkyTexture : null;
+  skyDome.material.color.set(isStarrySkyActive ? COLORS.white : COLORS.darkBlue);
   rootGroup.add(skyDome);
 }
 

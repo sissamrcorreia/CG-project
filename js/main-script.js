@@ -1,8 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { VRButton } from "three/addons/webxr/VRButton.js";
-// import * as Stats from "three/addons/libs/stats.module.js";
-// import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
 //////////////////////
 /* GLOBAL CONSTANTS */
@@ -135,6 +133,7 @@ let isLightCalculationsEnabled = true;
 let activeMaterial = 'phong'; // Default material
 let requestedMaterial = 'phong';
 
+// Key states
 const keysPressed = {
   _1: false, _2: false, _7: false,
   d: false, p: false, s: false,
@@ -155,22 +154,25 @@ function createScene() {
   scene.add(rootGroup);
 
   createTerrain();
+  
   createSkyDome();
+  
   createMoon();
+  
   createHouse();
+  
   createOakTree(3, new THREE.Vector3(-35, 1.5, 25), new THREE.Euler(0, Math.PI / 2, 0));
   createOakTree(4, new THREE.Vector3(-20, 1.5, -30), new THREE.Euler(0, -Math.PI / 2, 0));
   createOakTree(6, new THREE.Vector3(25, 3, -35), new THREE.Euler(0, Math.PI / 3, 0));
-
   createOakTree(3, new THREE.Vector3(30, 3, 25), new THREE.Euler(0, -Math.PI / 4, 0));
   createOakTree(2, new THREE.Vector3(55, 1.5, 15), new THREE.Euler(0, Math.PI / 6, 0));
   createOakTree(2.5, new THREE.Vector3(-45, 1.5, 15), new THREE.Euler(0, -Math.PI / 6, 0));
   createOakTree(3, new THREE.Vector3(-55, 1.5, -15), new THREE.Euler(0, Math.PI / 4, 0));
   createOakTree(2, new THREE.Vector3(-10, 2, -25), new THREE.Euler(0, -Math.PI / 3, 0));
-
   createOakTree(5, new THREE.Vector3(45, 1.75, 20), new THREE.Euler(0, Math.PI / 5, 0));
   createOakTree(4, new THREE.Vector3(-30, 1.3, -10), new THREE.Euler(0, Math.PI / 2, 0));
   createOakTree(3.5, new THREE.Vector3(25, 1.75, 10), new THREE.Euler(0, -Math.PI / 5, 0));
+  
   createOvni(new THREE.Vector3(0, 20, 0));
 
   createLights();
@@ -313,37 +315,37 @@ function createOvni(initialPosition) {
 function createHouseWallsGeometry() {
   const geometry = new THREE.BufferGeometry();
   const vertices = new Float32Array([
-    // front wall
+    // Front wall
     0, 0, 0, 1, 2.5, 0, 0, 2.5, 0, 1, 0, 0, 2.5, 0, 0, 2.5, 1, 0, 1, 1, 0, 4.5, 0, 0, 4.5, 2.5, 0,
     2.5, 2.5, 0, 6, 0, 0, 6, 1, 0, 4.5, 1, 0, 8, 0, 0, 8, 2.5, 0, 6, 2.5, 0, 9.25, 0, 0, 9.25, 2.5, 0,
     11.5, 0, 0, 11.5, 2.5, 0, 13, 0, 0, 13, 1, 0, 11.5, 1, 0, 17, 0, 0, 17, 2.5, 0, 13, 2.5, 0, 18.5, 0, 0,
     18.5, 1, 0, 17, 1, 0, 20, 0, 0, 20, 2.5, 0, 18.5, 2.5, 0, 8, 4, 0, 0, 4, 0, 13, 4, 0, 20, 4, 0,
     
-    // right wall
+    // Right wall
     20, 0, -3.5, 20, 2.5, -3.5, 20, 0, -5, 20, 1, -5, 20, 1, -3.5, 20, 0, -5.5, 20, 2.5, -5.5,
     20, 2.5, -5, 20, 4, -5.5,
     
-    // left wall
+    // Left wall
     0, 0, -5.5, 0, 4, -5.5,
     
-    // extras
+    // Extras
     0, 0, 0, 20, 0, 0, 20, 2.5, 0, 0, 4, 0,
     20, 4, 0, 20, 0, -5.5, 20, 4, -5.5, 0, 0, -5.5, 0, 4, -5.5
   ]);
   const indices = [
-    // front wall
+    // Front wall
     0, 1, 2, 0, 3, 1, 3, 4, 5, 3, 5, 6, 4, 7, 8, 4, 8, 9, 7, 10, 11, 7, 11, 12, 10, 13, 14,
     10, 14, 15, 16, 18, 19, 16, 19, 17, 18, 20, 21, 18, 21, 22, 20, 23, 24, 20, 24, 25,
     23, 26, 27, 23, 27, 28, 26, 29, 30, 26, 30, 31, 2, 14, 32, 2, 32, 33, 14, 25, 34,
     14, 34, 32, 25, 30, 35, 25, 35, 34,
     
-    // right wall
+    // Right wall
     48, 36, 37, 48, 37, 49, 36, 38, 39, 36, 39, 40, 38, 41, 42, 38, 42, 43, 49, 42, 44, 49, 44, 51,
 
-    // left wall
+    // Left wall
     45, 47, 50, 45, 50, 46,
 
-    // back wall
+    // Back wall
     52, 54, 55, 52, 55, 53
   ];
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -355,13 +357,13 @@ function createHouseWallsGeometry() {
 function createHouseRoofGeometry() {
   const geometry = new THREE.BufferGeometry();
   const vertices = new Float32Array([
-    // base
+    // Base
     0, 4, 0, 0, 4, -5.5, 20, 4, 0, 20, 4, -5.5,
     
-    // top
+    // Top
     0, 6, -2.75, 20, 6, -2.75,
     
-    // others
+    // Others
     0, 4, 0, 0, 4, -5.5, 20, 4, 0, 20, 4, -5.5, 0, 6, -2.75,
     0, 6, -2.75, 20, 6, -2.75, 20, 6, -2.75
   ]);
@@ -377,33 +379,33 @@ function createHouseRoofGeometry() {
 function createHouseWindowsGeometry() {
   const geometry = new THREE.BufferGeometry();
   const vertices = new Float32Array([
-    // window 1
+    // Window 1
     1, 1, 0, 2.5, 1, 0, 2.5, 2.5, 0, 1, 2.5, 0,
     
-    // window 2
+    // Window 2
     4.5, 1, 0, 6, 1, 0, 6, 2.5, 0, 4.5, 2.5, 0,
     11.5, 1, 0, 13, 1, 0, 13, 2.5, 0, 11.5, 2.5,
     
-    // window 3
+    // Window 3
     0, 17, 1, 0, 18.5, 1, 0, 18.5, 2.5, 0, 17, 2.5, 0,
     
-    // side window
+    // Side window
     20, 1, -3.5, 20, 1, -5, 20, 2.5, -5, 20, 2.5, -3.5
   ]);
   const indices = [
-    // window 1
+    // Window 1
     0, 1, 2, 0, 2, 3,
     
-    // window 2
+    // Window 2
     4, 5, 6, 4, 6, 7,
     
-    // window 3
+    // Window 3
     8, 9, 10, 8, 10, 11,
     
-    // window 4
+    // Window 4
     12, 13, 14, 12, 14, 15,
     
-    // side window
+    // Side window
     16, 17, 18, 16, 18, 19
   ];
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -447,7 +449,7 @@ function createFloralFieldTexture() {
   for (let i = 0; i < 500; i++) {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height;
-    const radius = 1 + Math.random() * 2; // Small circles
+    const radius = 1 + Math.random() * 2; // Small circles (flowers)
     const color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
 
     context.beginPath();
@@ -480,7 +482,7 @@ function createStarrySkyTexture() {
   for (let i = 0; i < 300; i++) {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height;
-    const radius = 0.5 + Math.random() * 0.5; // Very small stars
+    const radius = 0.5 + Math.random() * 0.5; // Small stars
     context.beginPath();
     context.arc(x, y, radius, 0, 2 * Math.PI);
     context.fill();
@@ -513,6 +515,7 @@ function createLights() {
   const ambientLight = new THREE.AmbientLight(0x404040, LIGHT_INTENSITY.ambient);
   scene.add(ambientLight);
 
+  // Directional light (moon light)
   moonLight = new THREE.DirectionalLight(COLORS.moonYellow, LIGHT_INTENSITY.directional);
   moonLight.position.set(MOON_POSITION.x, MOON_POSITION.y, MOON_POSITION.z);
   moonLight.target.position.set(15, 20, 5);
@@ -596,7 +599,7 @@ function update(delta) {
     requestedMaterial = 'phong';
   }
 
-  // Switch to cartoon shading (key E)
+  // Switch to Cartoon shading (key E)
   if (keysPressed.e && !keysPressed.e_prev) {
     requestedMaterial = 'cartoon';
   }
@@ -693,40 +696,40 @@ function onResize() {
 ///////////////////////
 function onKeyDown(e) {
   switch (e.key) {
-    // 1 -> campo floral
+    // 1 -> Floral field
     case '1': keysPressed._1 = true; break;
 
-    // 2 -> céu estrelado
+    // 2 -> Starry sky
     case '2': keysPressed._2 = true; break;
 
-    // 7 -> camera prespetiva
+    // 7 -> Toggle prespective camera
     case '7': keysPressed._7 = true; break;
 
-    // ovni movement
+    // Ovni movement
     case 'ArrowLeft': keysPressed.ArrowLeft = true; break;
     case 'ArrowRight': keysPressed.ArrowRight = true; break;
     case 'ArrowUp': keysPressed.ArrowUp = true; break;
     case 'ArrowDown': keysPressed.ArrowDown = true; break;
 
-    // d -> directional light
+    // d -> Directional light
     case 'd': case 'D': keysPressed.d = true; break;
 
-    // p -> point lights
+    // p -> Point lights
     case 'p': case 'P': keysPressed.p = true; break;
 
-    // s -> spotlight FIXME
+    // s -> Spotlight
     case 's': case 'S': keysPressed.s = true; break;
 
-    // r -> lighting calculations TODO
+    // r -> Lighting calculations
     case 'r': case 'R': keysPressed.r = true; break;
 
-    // q -> Gouraud shading TODO
+    // q -> Gouraud shading
     case 'q': case 'Q': keysPressed.q = true; break;
 
-    // w -> Phong shading TODO
+    // w -> Phong shading
     case 'w': case 'W': keysPressed.w = true; break;
 
-    // e -> Lambert shading TODO
+    // e -> Lambert shading
     case 'e': case 'E': keysPressed.e = true; break;
   }
 }

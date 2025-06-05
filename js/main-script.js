@@ -158,19 +158,19 @@ function createScene() {
   createSkyDome();
   createMoon();
   createHouse();
-  createOakTree(3, new THREE.Vector3(-35, 2.75, 25), new THREE.Euler(0, Math.PI / 2, 0));
-  createOakTree(4, new THREE.Vector3(-20, 2.25, -30), new THREE.Euler(0, -Math.PI / 2, 0));
-  createOakTree(6, new THREE.Vector3(25, 2.75, -35), new THREE.Euler(0, Math.PI / 3, 0));
+  createOakTree(3, new THREE.Vector3(-35, 1.5, 25), new THREE.Euler(0, Math.PI / 2, 0));
+  createOakTree(4, new THREE.Vector3(-20, 1.5, -30), new THREE.Euler(0, -Math.PI / 2, 0));
+  createOakTree(6, new THREE.Vector3(25, 3, -35), new THREE.Euler(0, Math.PI / 3, 0));
 
-  createOakTree(3, new THREE.Vector3(30, 2.5, 25), new THREE.Euler(0, -Math.PI / 4, 0));
-  createOakTree(2, new THREE.Vector3(55, 2.5, 15), new THREE.Euler(0, Math.PI / 6, 0));
-  createOakTree(2.5, new THREE.Vector3(-45, 2.5, 15), new THREE.Euler(0, -Math.PI / 6, 0));
-  createOakTree(3, new THREE.Vector3(-55, 2.5, -15), new THREE.Euler(0, Math.PI / 4, 0));
-  createOakTree(2, new THREE.Vector3(-10, 2.5, -25), new THREE.Euler(0, -Math.PI / 3, 0));
+  createOakTree(3, new THREE.Vector3(30, 3, 25), new THREE.Euler(0, -Math.PI / 4, 0));
+  createOakTree(2, new THREE.Vector3(55, 1.5, 15), new THREE.Euler(0, Math.PI / 6, 0));
+  createOakTree(2.5, new THREE.Vector3(-45, 1.5, 15), new THREE.Euler(0, -Math.PI / 6, 0));
+  createOakTree(3, new THREE.Vector3(-55, 1.5, -15), new THREE.Euler(0, Math.PI / 4, 0));
+  createOakTree(2, new THREE.Vector3(-10, 2, -25), new THREE.Euler(0, -Math.PI / 3, 0));
 
-  createOakTree(5, new THREE.Vector3(45, 2.6, 20), new THREE.Euler(0, Math.PI / 5, 0));
-  createOakTree(4, new THREE.Vector3(-30, 2.4, -10), new THREE.Euler(0, Math.PI / 2, 0));
-  createOakTree(3.5, new THREE.Vector3(25, 2.5, 10), new THREE.Euler(0, -Math.PI / 5, 0));
+  createOakTree(5, new THREE.Vector3(45, 1.75, 20), new THREE.Euler(0, Math.PI / 5, 0));
+  createOakTree(4, new THREE.Vector3(-30, 1.3, -10), new THREE.Euler(0, Math.PI / 2, 0));
+  createOakTree(3.5, new THREE.Vector3(25, 1.75, 10), new THREE.Euler(0, -Math.PI / 5, 0));
   createOvni(new THREE.Vector3(0, 20, 0));
 
   createLights();

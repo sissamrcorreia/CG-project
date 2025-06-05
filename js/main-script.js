@@ -36,7 +36,7 @@ const MATERIAL_PARAMS = {
     displacementScale: 5,
   }),
   
-  moon: () => ({ color: COLORS.moonYellow, emissive: COLORS.moonYellow }),
+  moon: () => ({ color: COLORS.moonYellow, emissive: COLORS.moonYellow, emissiveIntensity: 0.5 }),
   
   treeTrunk: () => ({ color: COLORS.brown }),
   treePrimaryBranch: () => ({ color: COLORS.brown }),
@@ -45,8 +45,8 @@ const MATERIAL_PARAMS = {
   
   ovniBody: () => ({ color: COLORS.red }),
   ovniCockpit: () => ({ color: COLORS.skyBlue, opacity: 0.75, transparent: true }),
-  ovniSpotlight: () => ({ color: COLORS.lightCyan, emissive: COLORS.darkBlue }),
-  ovniSphere: () => ({ color: COLORS.lightCyan, emissive: COLORS.darkBlue }),
+  ovniSpotlight: () => ({ color: COLORS.lightCyan}),
+  ovniSphere: () => ({ color: COLORS.lightCyan }),
   
   houseWalls: () => ({ color: COLORS.white, side: THREE.DoubleSide }),
   houseWindows: () => ({ color: COLORS.lightBlue, side: THREE.DoubleSide }),
@@ -55,10 +55,10 @@ const MATERIAL_PARAMS = {
 };
 
 const LIGHT_INTENSITY = Object.freeze({
-  ambient: 1,
+  ambient: 10,
   directional: 1,
-  ovniSpotlight: 3,
-  ovniSphere: 1,
+  ovniSpotlight: 500,
+  ovniSphere: 2,
 });
 
 const TERRAIN_HEIGHT_MAP_PATH = 'assets/height_map.png';
@@ -158,9 +158,19 @@ function createScene() {
   createSkyDome();
   createMoon();
   createHouse();
-  createOakTree(1.5, new THREE.Vector3(-28, 2.75, 17), new THREE.Euler(0, Math.PI / 2, 0));
-  createOakTree(4, new THREE.Vector3(-14, 2.25, -23), new THREE.Euler(0, -Math.PI / 2, 0));
-  createOakTree(8, new THREE.Vector3(15, 2.75, -26), new THREE.Euler(0, Math.PI / 3, 0));
+  createOakTree(3, new THREE.Vector3(-35, 2.75, 25), new THREE.Euler(0, Math.PI / 2, 0));
+  createOakTree(4, new THREE.Vector3(-20, 2.25, -30), new THREE.Euler(0, -Math.PI / 2, 0));
+  createOakTree(6, new THREE.Vector3(25, 2.75, -35), new THREE.Euler(0, Math.PI / 3, 0));
+
+  createOakTree(3, new THREE.Vector3(30, 2.5, 25), new THREE.Euler(0, -Math.PI / 4, 0));
+  createOakTree(2, new THREE.Vector3(55, 2.5, 15), new THREE.Euler(0, Math.PI / 6, 0));
+  createOakTree(2.5, new THREE.Vector3(-45, 2.5, 15), new THREE.Euler(0, -Math.PI / 6, 0));
+  createOakTree(3, new THREE.Vector3(-55, 2.5, -15), new THREE.Euler(0, Math.PI / 4, 0));
+  createOakTree(2, new THREE.Vector3(-10, 2.5, -25), new THREE.Euler(0, -Math.PI / 3, 0));
+
+  createOakTree(5, new THREE.Vector3(45, 2.6, 20), new THREE.Euler(0, Math.PI / 5, 0));
+  createOakTree(4, new THREE.Vector3(-30, 2.4, -10), new THREE.Euler(0, Math.PI / 2, 0));
+  createOakTree(3.5, new THREE.Vector3(25, 2.5, 10), new THREE.Euler(0, -Math.PI / 5, 0));
   createOvni(new THREE.Vector3(0, 20, 0));
 
   createLights();
@@ -271,7 +281,7 @@ function createOvni(initialPosition) {
   spotlightMesh.position.set(0, -ELLIPSOID_SCALING.ovniBody.y, 0);
 
   // Create spotlight
-  spotlight = new THREE.SpotLight(COLORS.lightCyan, 30, 50, Math.PI / 6, 0.5, 1.7);
+  spotlight = new THREE.SpotLight(COLORS.lightCyan, LIGHT_INTENSITY.ovniSpotlight, 50, Math.PI / 6, 0.5, 1.7);
   spotlight.position.set(0, -ELLIPSOID_SCALING.ovniBody.y, 0);
   spotlight.target.position.set(0, -ELLIPSOID_SCALING.ovniBody.y - 1, 0); // Point downward
   ovni.add(spotlight, spotlight.target);
@@ -290,7 +300,7 @@ function createOvni(initialPosition) {
     );
     sphere.position.set(sphereX, sphereY, 0);
     // Add point light
-    const pointLight = new THREE.PointLight(COLORS.lightCyan, 5, 20);
+    const pointLight = new THREE.PointLight(COLORS.lightCyan, LIGHT_INTENSITY.ovniSphere, 20);
     pointLight.position.set(sphereX, sphereY, 0);
     sphereGroup.add(sphere, pointLight);
     pointLights.push(pointLight);

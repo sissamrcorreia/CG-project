@@ -653,8 +653,8 @@ function init() {
   renderer.shadowMap.enabled = true; // Enable shadow mapping
   renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional: softer shadows
   renderer.xr.enabled = true; // Enable WebXR for VR support
-  document.body.appendChild(VRButton.createButton(renderer));
   document.body.appendChild(renderer.domElement);
+  document.body.appendChild(VRButton.createButton(renderer));
 
   floralTexture = createFloralFieldTexture();
   starrySkyTexture = createStarrySkyTexture();

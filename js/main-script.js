@@ -10,7 +10,7 @@ import { VRButton } from "three/addons/webxr/VRButton.js";
 const COLORS = Object.freeze({
   darkBlue: new THREE.Color(0x000099),
   darkPurple: new THREE.Color(0x4b0082),
-  lilac: new THREE.Color(0xd8bfd8),
+  lilac: new THREE.Color(0xB89FB8),
   green: new THREE.Color(0x55cc55),
   darkGreen: new THREE.Color(0x5e8c61),
   red: new THREE.Color(0xe63946),
@@ -18,9 +18,9 @@ const COLORS = Object.freeze({
   lightCyan: new THREE.Color(0xb0e0e6),
   brown: new THREE.Color(0x8b5a2b),
   orange: new THREE.Color(0xffa500),
-  lightBlue: new THREE.Color(0xadd8e6),
+  lightBlue: new THREE.Color(0x9ec4d2),
   blue: new THREE.Color(0x4682b4),
-  white: new THREE.Color(0xf5f5f5),
+  white: new THREE.Color(0xffffff),
   yellow: new THREE.Color(0xffd700),
   moonYellow: new THREE.Color(0xf0c05a),
 });

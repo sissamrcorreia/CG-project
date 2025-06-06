@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { VRButton } from "three/addons/webxr/VRButton.js";
 
 //////////////////////
@@ -111,6 +110,19 @@ const ELLIPSOID_SCALING = {
 const OVNI_ANGULAR_SPEED = Math.PI / 2; // Radians per second
 const OVNI_LINEAR_SPEED = 20; // Units per second
 
+const clock = new THREE.Clock();
+
+// Key states
+const keysPressed = {
+  _1: false, _2: false, _7: false,
+  d: false, p: false, s: false,
+  r: false, q: false, w: false, e: false,
+  _1_prev: false, _2_prev: false, _7_prev: false,
+  d_prev: false, p_prev: false, s_prev: false,
+  r_prev: false, q_prev: false, w_prev: false, e_prev: false,
+  ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false
+};
+
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
@@ -132,17 +144,6 @@ let isLightCalculationsEnabled = true;
 
 let activeMaterial = 'phong'; // Default material
 let requestedMaterial = 'phong';
-
-// Key states
-const keysPressed = {
-  _1: false, _2: false, _7: false,
-  d: false, p: false, s: false,
-  r: false, q: false, w: false, e: false,
-  _1_prev: false, _2_prev: false, _7_prev: false,
-  d_prev: false, p_prev: false, s_prev: false,
-  r_prev: false, q_prev: false, w_prev: false, e_prev: false,
-  ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false
-};
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -220,7 +221,7 @@ function createOakTree(trunkHeight, position, rotation) {
   treeGroup.rotation.copy(rotation);
   rootGroup.add(treeGroup);
 
-  // Trunck
+  // Trunk
   const trunk = new THREE.Mesh(GEOMETRY.treeTrunk, createMaterial('phong', MATERIAL_PARAMS.treeTrunk()));
   trunk.scale.setY(trunkHeight);
   trunk.position.setY(trunkHeight / 2);
@@ -503,9 +504,6 @@ function createCameras() {
   perspectivecamera.lookAt(0, 0, 0);
 
   activecamera = perspectivecamera; // Default active camera
-  const controls = new OrbitControls(activecamera, renderer.domElement);
-  controls.target.set(0, 0, 0);
-  controls.update();
 }
 
 /////////////////////
@@ -569,7 +567,7 @@ function update(delta) {
 
   // Toggle camera (key 7)
   if (keysPressed._7 && !keysPressed._7_prev) {
-    // Key 7 logic here
+    // Logic here
   }
 
   // Toggle directional light (key D)
@@ -642,12 +640,14 @@ function render() {
 ////////////////////////////////
 function init() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
+
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
+
   renderer.shadowMap.enabled = true; // Enable shadow mapping
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional: softer shadows
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.xr.enabled = true; // Enable WebXR for VR support
+
   document.body.appendChild(renderer.domElement);
   document.body.appendChild(VRButton.createButton(renderer));
 
@@ -668,10 +668,7 @@ function init() {
 /////////////////////
 /* ANIMATION CYCLE */
 /////////////////////
-function animate() {
-  // Use a proper delta time calculation
-  const clock = new THREE.Clock();
-  
+function animate() {  
   function animationLoop() {
     const delta = clock.getDelta();
     update(delta);

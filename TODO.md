@@ -18,6 +18,6 @@
   * [X] MeshPhongMaterial (Phong shading), toggled with 'W' or 'w'
   * [X] MeshToonMaterial (Cartoon shading), toggled with 'E' or 'e'
   * [X] Toggle lighting calculations with 'R' or 'r'
-* [ ] Implement a fixed perspective camera with a view of the entire scene, selectable with '7'
-* [ ] Add a THREE.StereoCamera for VR support, following Three.js VR documentation
+* [X] Implement a fixed perspective camera with a view of the entire scene, selectable with '7'
+* [X] Add a THREE.StereoCamera for VR support, following Three.js VR documentation
 * [X] Handle window resize events appropriately
